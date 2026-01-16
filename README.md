@@ -4,6 +4,11 @@
 
 `copy_CCNP_fsaverage5.ps1` 
 
+## Step : 被试筛选
+
+qc结果
+年龄性别
+
 ## Step : 每个网络选取1个ROI
 
 `select_ROI_fsLR32k`
