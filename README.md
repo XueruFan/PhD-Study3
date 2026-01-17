@@ -1,6 +1,19 @@
 # DCM-Project[PhD Study3]
 
-## Step 1: 提取15个网络的ROI
+## Step 0: 拷贝需要的静息态数据
+
+`copy_CCNP_fsaverage5.ps1` 
+
+## Step : 被试筛选
+
+qc结果
+年龄性别
+
+## Step : 每个网络选取1个ROI
+
+`select_ROI_fsLR32k`
+
+## Step : 空间转换15个网络的ROI
 
 将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），逐步转换到 **FreeSurfer 的 fsaverage5** 表面空间，从而与基于 fsaverage5 预处理的功能数据在**顶点层面实现精确对齐**。
 
