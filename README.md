@@ -34,3 +34,9 @@ rh.DU15network<N>_fsaverage164k.func.gii
 output/ROI_fsaverage5/
 lh.DU15Net<N>_fsaverage5.mgh
 rh.DU15Net<N>_fsaverage5.mgh
+
+4. `convert_DU15ROI_to_nifti.sh`  
+**fsaverage5(.mgh) → fsaverage5（nii.gz）** 格式转换，在windows电脑上（不使用hfreesurfer时）读数据需要。
+output/ROI_fsaverage5/
+lh.DU15Net<N>_fsaverage5.nii.gz
+rh.DU15Net<N>_fsaverage5.nii.gz
