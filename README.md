@@ -41,6 +41,14 @@ output/ROI_fsaverage5/
 lh.DU15Net<N>_fsaverage5.nii.gz
 rh.DU15Net<N>_fsaverage5.nii.gz
 
+## Step : 可视化ROI
+
+1. `plot_Du15ROI_fsaverage5.py`
+在 **fsaverage5 皮层表面空间** 上可视化 **DU15 功能网络（15 个 network）**。将左右半球的 DU15 ROI（`.mgz`）合并为网络标签图，按照DU定义的 RGB 颜色进行渲染，并在膨胀皮层表面上生成多个视角（外侧、内侧、前、后、上、下）的高分辨率图像。
+visual/
+DU15_fsaverage5_LH_anterior.png
+...
+
 
 ## Step : 提取时间序列
 `extract_timeseries_CCNP_mac`和`extract_timeseries_CCNP_wins.m`
