@@ -1,11 +1,12 @@
 %% ============================================================
-%  Extract DU15 ROI time series (fsaverage5 surface)
-%  每个ROI取所有体素的均值
-% ============================================================
+%  Extract DU15 network time series (fsaverage5 surface)
+%  Vertex-wise detrend (NaN-aware)
+%  ROI average -> Bilateral network average
+%% ============================================================
 
 clear; clc;
-addpath('/Applications/freesurfer/matlab');
-assert(exist('MRIread','file')==2, 'MRIread not found');
+% addpath('/Applications/freesurfer/matlab');
+% assert(exist('MRIread','file')==2, 'MRIread not found');
 
 projDir = '/Users/xuerufan/DCM-Project-PhD-Study3-';
 dataDir = fullfile(projDir, 'data');
@@ -38,9 +39,9 @@ for s = 1:numel(sites)
         for r = 1:numel(runs)
 
             runName = runs{r};
-
             fmri = struct();
 
+            %% ---------- Load fMRI data ----------
             for h = 1:numel(hemi)
 
                 hemiName = hemi{h};
@@ -55,7 +56,7 @@ for s = 1:numel(sites)
                 end
 
                 tmp = MRIread(fullfile(fmriFile(1).folder, fmriFile(1).name));
-                fmri.(hemiName) = squeeze(tmp.vol);  % [10242 x T]
+                fmri.(hemiName) = squeeze(tmp.vol);   % [10242 × T]
             end
 
             if isempty(fmri)
@@ -64,10 +65,12 @@ for s = 1:numel(sites)
 
             nTime = size(fmri.lh, 2);
 
+            %% ---------- Allocate ----------
             ROI_ts = struct();
-            ROI_ts.lh = zeros(nROI, nTime);
-            ROI_ts.rh = zeros(nROI, nTime);
+            ROI_ts.lh = nan(nROI, nTime);
+            ROI_ts.rh = nan(nROI, nTime);
 
+            %% ---------- ROI loop ----------
             for i = 1:nROI
 
                 roiName = sprintf('DU15Net%d', i);
@@ -76,32 +79,61 @@ for s = 1:numel(sites)
 
                     hemiName = hemi{h};
 
-                    roiFile = fullfile(roiDir, sprintf('%s.%s_fsaverage5.mgh', hemiName, roiName));
+                    roiFile = fullfile(roiDir, ...
+                        sprintf('%s.%s_fsaverage5.mgh', hemiName, roiName));
 
                     roi  = MRIread(roiFile);
                     mask = squeeze(roi.vol) > 0;
 
                     assert(any(mask), 'Empty ROI: %s %s', roiName, hemiName);
 
-                    ROI_ts.(hemiName)(i,:) = mean(fmri.(hemiName)(mask,:), 1);
+                    ts = fmri.(hemiName)(mask, :);   % [nVertex × nTime]
+
+                    ts_detrend = nan(size(ts));
+
+                    for v = 1:size(ts,1)
+                    
+                        v_ts = ts(v,:);
+                    
+                        if all(isnan(v_ts)) || nanstd(v_ts) == 0
+                            continue;
+                        end
+                    
+                        good = ~isnan(v_ts);
+                    
+                        if sum(good) > 2
+                            v_ts_d = v_ts;
+                            v_ts_d(good) = detrend(v_ts(good), 'linear');
+                            ts_detrend(v,:) = v_ts_d;
+                        end
+                    end
+
+                    ROI_ts.(hemiName)(i,:) = nanmean(ts_detrend, 1);
+
                 end
             end
 
-            ROI_ts.lh = detrend(ROI_ts.lh', 'linear')';
-            ROI_ts.rh = detrend(ROI_ts.rh', 'linear')';
+            %% ---------- Bilateral network average ----------
+            ROI_ts_bilat = nan(nROI, nTime);
 
-            outFile = fullfile(outDir, sprintf('%s_DU15_roi_ts.mat', runName));
+            for i = 1:nROI
+                ROI_ts_bilat(i,:) = nanmean([ROI_ts.lh(i,:); ROI_ts.rh(i,:)], 1);
+            end
 
-            save(outFile, 'ROI_ts', 'runName', 'siteName', 'subName');
+            %% ---------- Save ----------
+            outFile = fullfile(outDir, sprintf('%s_DU15_network_ts.mat', runName));
+            save(outFile, ...
+                'ROI_ts', ...          % hemisphere-specific (for QC)
+                'ROI_ts_bilat', ...    % FINAL network-level time series
+                'runName', 'siteName', 'subName');
 
         end
-
     end
-
 end
 
-fprintf('DONE!');
+fprintf('DONE!\n');
 
-% plot(ROI_ts.lh(1,:)); hold on;
+% plot(ROI_ts.lh(1,:));
+% hold on; 
 % plot(ROI_ts.rh(1,:));
 % legend('lh','rh');
