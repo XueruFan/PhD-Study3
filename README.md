@@ -78,7 +78,7 @@ DU15Net_fsLR10k.dscalar.nii
 `extract_timeseries_CCNP_mac`、`extract_timeseries_CCNP_wins.m`和`extract_timeseries_ABIDE.mac.m`
 提取数据中ROI体素的时间序列，然后进行逐个时间序列的去均值和去线性漂移，两个半球的ROI内进行体素平均。
 CCNP
-data/timeseries/fsaverage/<SITE>/<SUB>/
+data/timeseries/fsaverage/SITE/SUB/
 rest1_DU15_roi_ts.mat
 rest2_DU15_roi_ts.mat
 ABIDE
