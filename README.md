@@ -113,6 +113,13 @@ rDCM/
         └── sub-XXXX_rest1_rDCM.mat
 
 
+## Step : 汇总rDCM结果
+`sum_rDCM_ABIDE.m`
+`sum_rDCM_CCNP.m`
+CCNP_rDCM_summary.xlsx
+ABIDE_rDCM_summary.xlsx
+
+
 ## Step : rDCM 组水平分析
 `group_analysis_rDCM_ABIDE.R`
 ABIDE有效连接参数的组水平统计分析代码。分析以男性、扫描时年龄小于 13 岁的被试为样本，采用逐连接的线性混合效应模型比较 ASD 与典型发育对照组在有效连接参数上的差异，并将采集站点作为随机截距以控制多站点数据的系统性偏移。所有连接的组效应结果均进行了假发现率校正，并辅以效应量分布与方向一致性分析，用于评估单连接层面是否存在稳健的组间差异。
