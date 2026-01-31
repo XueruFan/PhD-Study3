@@ -131,3 +131,10 @@ ABIDE_rDCM_summary.xlsx
 `group_analysis_srDCM_ABIDE.R`
 /Volumes/Zuolab_XRF/data/abide/stats/ABIDE_srDCM_density.csv
 /Volumes/Zuolab_XRF/data/abide/stats/ABIDE_srDCM_density_male_under13.csv
+
+## Step : 可视化组水平分析结果
+`gplot_roup_analysis_rDCM_ABIDE.R`
+/Volumes/Zuolab_XRF/data/abide/figures/ABIDE_rDCM_group_effects.png
+
+`group_analysis_srDCM_ABIDE.R`
+/Volumes/Zuolab_XRF/data/abide/figures/ABIDE_srDCM_logistic.png
