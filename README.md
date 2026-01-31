@@ -88,7 +88,7 @@ data/abide/timeseries/
 
 ## Step : rDCM 批处理
 
-基于 **TAPAS toolbox**的有效连接估计，所有脚本均采用 **classic rDCM（无 sparsity 约束）**，并显式指定采样间隔（TR）。
+基于 **TAPAS toolbox**的有效连接估计，所有脚本均采用 **classic rDCM（无 sparsity 约束）** 和 **有sparsity 约束**两种方式，并显式指定采样间隔（TR）。
 
 
 ### 1️⃣ `calculate_rDCM_ABIDE.m`
