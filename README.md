@@ -88,7 +88,7 @@ data/abide/timeseries/
 
 ## Step : rDCM 批处理
 
-基于 **TAPAS toolbox**的有效连接估计，所有脚本均采用 **classic rDCM（无 sparsity 约束）**，并显式指定采样间隔（TR）。
+基于 **TAPAS toolbox**的有效连接估计，所有脚本均采用 **classic rDCM（无 sparsity 约束）** 和 **有sparsity 约束**两种方式，并显式指定采样间隔（TR）。
 
 
 ### 1️⃣ `calculate_rDCM_ABIDE.m`
@@ -119,8 +119,22 @@ rDCM/
 CCNP_rDCM_summary.xlsx
 ABIDE_rDCM_summary.xlsx
 
+`sum_srDCM_ABIDE.m`
+ABIDE_rDCM_summary.xlsx
 
-## Step : rDCM 组水平分析
+
+## Step : rDCM组水平分析
 `group_analysis_rDCM_ABIDE.R`
-ABIDE有效连接参数的组水平统计分析代码。分析以男性、扫描时年龄小于 13 岁的被试为样本，采用逐连接的线性混合效应模型比较 ASD 与典型发育对照组在有效连接参数上的差异，并将采集站点作为随机截距以控制多站点数据的系统性偏移。所有连接的组效应结果均进行了假发现率校正，并辅以效应量分布与方向一致性分析，用于评估单连接层面是否存在稳健的组间差异。
-结果文件：/Volumes/Zuolab_XRF/data/abide/stats/ABIDE_rDCM_group_effects_male_under13.csv
+/Volumes/Zuolab_XRF/data/abide/stats/ABIDE_rDCM_group_effects.csv
+/Volumes/Zuolab_XRF/data/abide/stats/ABIDE_rDCM_group_effects_male_under13.csv
+
+`group_analysis_srDCM_ABIDE.R`
+/Volumes/Zuolab_XRF/data/abide/stats/ABIDE_srDCM_density.csv
+/Volumes/Zuolab_XRF/data/abide/stats/ABIDE_srDCM_density_male_under13.csv
+
+## Step : 可视化组水平分析结果
+`gplot_roup_analysis_rDCM_ABIDE.R`
+/Volumes/Zuolab_XRF/data/abide/figures/ABIDE_rDCM_group_effects.png
+
+`group_analysis_srDCM_ABIDE.R`
+/Volumes/Zuolab_XRF/data/abide/figures/ABIDE_srDCM_logistic.png
