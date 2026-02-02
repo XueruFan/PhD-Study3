@@ -86,6 +86,14 @@ data/abide/timeseries/
 29096_DU15_network_ts.mat
 
 
+# 研究三 SFC分析
+
+`calculate_rDCM_ABIDE.m`计算SFC、zSFC和embedding
+`sum_SFC_embedding_ABIDE.m`汇总所有被试的embedding值
+`group_analysis_SFC_embedding_ABIDE.R`描述统计绘图embedding值
+
+# 研究四 rDCM分析
+
 ## Step : rDCM 批处理
 
 基于 **TAPAS toolbox**的有效连接估计，所有脚本均采用 **classic rDCM（无 sparsity 约束）** 和 **有sparsity 约束**两种方式，并显式指定采样间隔（TR）。
