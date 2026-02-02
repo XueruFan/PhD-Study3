@@ -2,7 +2,6 @@ clear; clc;
 
 %% =========================
 data_root = '/Volumes/Zuolab_XRF/data/abide/timeseries';
-cd(data_root)
 out_root  = '/Volumes/Zuolab_XRF/data/abide/SFC';
 
 if ~exist(out_root, 'dir')
@@ -10,6 +9,8 @@ if ~exist(out_root, 'dir')
 end
 
 addpath(genpath('/Users/xuerufan/matlab-toolbox/CCS-master'));  % CCS 工具箱路径
+addpath(genpath('/Users/xuerufan/DCM-Project-PhD-Study3-/code'));
+cd('/Users/xuerufan/DCM-Project-PhD-Study3-/code')
 
 files = dir(fullfile(data_root, '*_network_ts.mat'));
 files = files(~startsWith({files.name}, '._'));
@@ -17,7 +18,6 @@ files = files(~startsWith({files.name}, '._'));
 nSub  = length(files);
 
 step_max  = 8;      % 最大步数
-sparsity = 0.10;   % 卡10%阈值
 zflag    = true;   % 是否做 z-score
 
 %% =========================
@@ -33,21 +33,27 @@ for iSub = 1:nSub
     FC = corr(ROI_ts');
     FC(1:N+1:end) = 0; %自相关为0
     
-    % -------- 稀疏化（按绝对值）--------
     absFC = abs(FC);
-    edge_vec = sort(absFC(:), 'descend');
-    nkeep = round(sparsity * N * (N - 1));
-    thr = edge_vec(nkeep);
     
-    adj = absFC >= thr;
-    adj = triu(adj,1) + triu(adj,1)';   % 无向二值图
+    % -------- 稀疏化：每个网络至少 1 条边 --------
+    adj = zeros(N, N);
     
+    for i = 1:N
+        row = absFC(i, :);
+        row(i) = 0;
+        [~, idx] = max(row);
+        adj(i, idx) = 1;
+    end
+    
+    % 无向化
+    adj = max(adj, adj');
+
     % -------- SFC--------
     for S = 1:step_max
-        
+    
         SFC = ccs_core_graphwalk_old(adj, S, 'normal');
         SFC(1:N+1:end) = 0;
-        
+    
         if zflag
             mu  = mean(SFC, 2);
             sig = std(SFC, 0, 2);
@@ -56,14 +62,21 @@ for iSub = 1:nSub
         else
             zSFC = [];
         end
-        
-        [~, subname, ~] = fileparts(files(iSub).name);
-        save_name = sprintf('%s_SFC_step%02d.mat', subname, S);
-        save(fullfile(out_root, save_name), 'SFC', 'zSFC');
-        
-        clear SFC zSFC mu sig
-    end
     
+
+        tmp = zSFC;
+        tmp(1:N+1:end) = NaN;                  % 去掉自连接
+        Embedding = mean(tmp, 2, 'omitnan');   % 每个网络一个数
+    
+        [~, oldname, ~] = fileparts(files(iSub).name);
+        tokens = regexp(oldname, '^(\d+)_', 'tokens');
+        subID  = tokens{1}{1};
+        
+        save_name = sprintf('%s_DU15_SFC_step%02d.mat', subID, S);
+        save(fullfile(out_root, save_name), 'SFC', 'zSFC', 'Embedding');
+  
+        clear SFC zSFC Embedding mu sig tmp
+    end
     clear ts FC absFC adj
 end
 
