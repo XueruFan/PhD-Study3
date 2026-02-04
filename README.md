@@ -90,7 +90,49 @@ data/abide/timeseries/
 
 `predict_clusters_abide.py`使用asd研究中的分类器预测abide中剩余男性asd（大于等于13岁）的亚型
 
-`group_analysis_SFC_embedding_ABIDE.R`描述统计绘图embedding值
+
+### ABIDE 功能连接嵌入的描述性分析
+`group_analysis_SFC_embedding_ABIDE.R`
+整合了多步嵌入计算结果、被试人口学信息、站点信息以及基于机器学习的 ASD 亚型预测结果（仅包含男性被试），并生成可直接用于论文排版的高分辨率图像。
+
+所有分析结果统一输出至以下目录：
+/Users/xuerufan/DCM-Project-PhD-Study3-/output/ABIDE/
+
+其中，表格结果与图像结果分别存放如下。
+
+1. 人口学描述统计（按亚型）  
+   文件名：  
+   sfc_demo.csv  
+
+   内容说明：  
+   各亚型被试的样本量、平均年龄及年龄标准差。
+
+2. 功能网络层面的嵌入描述统计  
+   文件名：  
+   sfc_network.csv  
+
+   内容说明：  
+   不同亚型在各功能网络上的 embedding 均值、标准差、中位数及四分位距。
+
+3. 嵌入步骤层面的描述统计  
+   文件名：  
+   sfc_step.csv  
+
+   内容说明：  
+   不同亚型在各嵌入步骤上的 embedding 均值与标准差。
+
+所有图像文件统一保存在以下子目录：
+/Users/xuerufan/DCM-Project-PhD-Study3-/output/ABIDE/plot/
+
+当前版本生成的主要图像为：
+功能网络 × 嵌入步骤的平均 embedding 热图  
+   文件名：  SFC_ABIDE_Heatmap.png  
+   图像说明：  
+   该图展示了三组被试（TD、ASD-L、ASD-H）在不同功能网络和嵌入步骤上的平均 embedding 分布情况，功能网络按系统组织排序，用于博士论文结果部分的核心图像展示。
+
+
+
+
 
 # 研究四 rDCM分析
 
