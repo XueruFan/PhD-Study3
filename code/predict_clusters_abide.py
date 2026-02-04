@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Apply trained ABIDE SVM (5–12.9y ASD Male) to ABIDE remaining subjects (>=13y ASD Male)
+Apply trained ABIDE SVM (5–12.9y ASD Male)
+to ABIDE remaining subjects (>=13y ASD Male),
+assign subtype = 0 to male controls only
+
 @author: xueru
 """
 
-import os
 import pandas as pd
 import joblib
 
@@ -24,7 +26,7 @@ data_file = (
 
 output_file = (
     "/Users/xuerufan/DCM-Project-PhD-Study3-/output/"
-    "abide_cluster_predictions_13maleASD.csv"
+    "abide_cluster_predictions_male.csv"
 )
 
 # =========================================================
@@ -35,91 +37,100 @@ loaded_model = joblib.load(model_file)
 print("✓ Trained SVM model loaded")
 
 # =========================================================
-# 3. 读取 ABIDE 数据
+# 3. 读取 ABIDE 全数据
 # =========================================================
 
-data = pd.read_csv(data_file)
-print(f"✓ Original dataset size: {data.shape}")
+data_all = pd.read_csv(data_file)
+print(f"✓ Original dataset size: {data_all.shape}")
 
 # =========================================================
-# 4. 严格筛选预测人群（方法学关键）
+# 4. ASD 预测人群筛选（Male, Age ≥ 13）
 # =========================================================
 
-# 仅 ASD
-data = data[data["dx"] == "ASD"]
+data_asd = data_all.copy()
 
-# 去掉训练年龄段（>= 13 岁）
-data = data[data["Age"] >= 13]
+data_asd = data_asd[
+    (data_asd["dx"] == "ASD") &
+    (data_asd["Age"] >= 13) &
+    (data_asd["sex"] == "Male")
+]
 
-# 仅男性（主分析）
-data = data[data["sex"] == "Male"]
-
-print(f"✓ Subjects after filtering: {data.shape[0]}")
+print(f"✓ ASD subjects for prediction: {data_asd.shape[0]}")
 
 # =========================================================
-# 5. 保存 ID / 元数据
+# 5. ASD 元数据
 # =========================================================
 
 meta_cols = ["participant", "Site", "Release", "Age", "sex", "dx"]
-meta_cols = [c for c in meta_cols if c in data.columns]
+meta_cols = [c for c in meta_cols if c in data_asd.columns]
 
-meta_data = data[meta_cols].copy()
+meta_asd = data_asd[meta_cols].copy()
 
 # =========================================================
 # 6. 构建特征矩阵
 # =========================================================
 
-X = data.drop(columns=meta_cols)
+X = data_asd.drop(columns=meta_cols)
 
-# 模型期望的特征（顺序非常重要）
 model_features = loaded_model.best_estimator_.feature_names_in_
 
-# 检查特征缺失
 missing_features = set(model_features) - set(X.columns)
-if len(missing_features) > 0:
+if missing_features:
     raise ValueError(
         "❌ 新数据缺少模型所需特征：\n"
         f"{missing_features}"
     )
 
-# 按训练时顺序选取特征
 X = X[model_features]
 
 # =========================================================
-# 直接删除含有NaN的行
+# 7. 删除包含 NaN 的 ASD 样本
 # =========================================================
 
-# 记录删除前的样本数
-original_samples = X.shape[0]
-
-# 删除所有包含NaN的行
 nan_mask = X.isna().any(axis=1)
+print(f"删除 {nan_mask.sum()} 个包含 NaN 的 ASD 样本")
+
 X = X[~nan_mask]
-meta_data = meta_data.loc[~nan_mask]
+meta_asd = meta_asd.loc[~nan_mask]
 
-print(f"删除 {nan_mask.sum()}/{original_samples} 个包含NaN的样本")
-print(f"剩余 {X.shape[0]} 个样本")
-
-print(f"✓ 特征矩阵 shape: {X.shape}")
+print(f"✓ Remaining ASD samples: {X.shape[0]}")
 
 # =========================================================
-# 7. 分型预测
+# 8. ASD 分型预测
 # =========================================================
 
 predicted_cluster = loaded_model.predict(X)
-
-# （可选）decision function，用于后续不确定性分析
 decision_score = loaded_model.decision_function(X)
 
+asd_result = meta_asd.copy()
+asd_result["subtype"] = predicted_cluster
+asd_result["decision_score"] = decision_score
+
 # =========================================================
-# 8. 保存结果
+# 9. 男性对照组（仅元数据，subtype = 0）
 # =========================================================
 
-output_df = meta_data.copy()
-output_df["predicted_cluster"] = predicted_cluster
-output_df["decision_score"] = decision_score
+control_result = data_all[
+    (data_all["dx"] != "ASD") &
+    (data_all["sex"] == "Male")
+][meta_cols].copy()
 
-output_df.to_csv(output_file, index=False)
+control_result["subtype"] = 0
+control_result["decision_score"] = 0.0
 
-print("✓ Cluster assignment completed")
+print(f"✓ Male control subjects: {control_result.shape[0]}")
+
+# =========================================================
+# 10. 合并 ASD + Control 并保存
+# =========================================================
+
+final_output = pd.concat(
+    [asd_result, control_result],
+    axis=0,
+    ignore_index=True
+)
+
+final_output.to_csv(output_file, index=False)
+
+print("✓ Cluster assignment completed (Male ASD + Male Control)")
 print(f"✓ Results saved to:\n{output_file}")
