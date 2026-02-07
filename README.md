@@ -1,19 +1,18 @@
-# DCM-Project[PhD Study3]
+# PhD Study3&4
 
+## 研究三：SFC分析
 
-## Step 0: 拷贝需要的静息态数据
-
+### 拷贝需要的静息态数据
 `copy_CCNP_fsaverage5.ps1` 
 `unzip_CCNP.ps1`
 
+### 亚型预测
+`predict_clusters_abide.py`使用asd研究中的分类器预测abide中剩余男性asd（大于等于13岁）的亚型
 
-## Step : 每个网络选取1个ROI
-
+### 每个网络选取1个ROI
 `select_ROI_fsLR32k`
 
-
-## Step : 空间转换15个网络的ROI
-
+### 空间转换网络ROI
 将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **FreeSurfer 的 fsaverage5** 表面空间，从而与基于 fsaverage5 预处理的功能数据在**顶点层面实现精确对齐**。
 
 `export_ROI_wb.m`  
@@ -49,8 +48,7 @@ rh.DU15Net<N>_fsaverage5.nii.gz
 将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **fsLR-10k**表面空间。
 
 
-## Step : 可视化ROI
-
+### 可视化ROI
 `plot_Du15ROI_fsaverage5.py`
 在 **fsaverage5 皮层表面空间** 上可视化 **DU15 功能网络（15 个 network）**。将左右半球的 DU15 ROI（`.mgz`）合并为网络标签图，按照DU定义的 RGB 颜色进行渲染，并在膨胀皮层表面上生成多个视角（外侧、内侧、前、后、上、下）的高分辨率图像。
 visual/
@@ -67,8 +65,7 @@ output/ROI_fslr10k/
 DU15Net_fsLR10k.dscalar.nii
 
 
-## Step : 提取时间序列
-
+### 提取时间序列
 `extract_timeseries_CCNP_mac`、`extract_timeseries_CCNP_wins.m`和`extract_timeseries_ABIDE.mac.m`
 提取数据中ROI体素的时间序列，然后进行逐个时间序列的去均值和去线性漂移，两个半球的ROI内进行体素平均。
 CCNP
@@ -80,23 +77,23 @@ data/abide/timeseries/
 29096_DU15_network_ts.mat
 
 
-# 研究三 SFC分析
-
-`calculate_rDCM_ABIDE.m`和`calculate_rDCM_CCNP.m`计算SFC、zSFC和embedding
+### 计算SFC
+`calculate_SFC_ABIDE.m`和`calculate_SFC_CCNP.m`计算SFC、zSFC和embedding
+`calculate_SFC_nbwt_ABIDE.m`（不走回头路版）
 
 `sum_SFC_embedding_ABIDE.m`和`sum_SFC_embedding_CCNP.m`汇总所有被试的embedding值
+`sum_SFC_nbwt_embedding_ABIDE.m`（不走回头路版）
 
+
+### 筛选被试数据
 `select_ccnpckg_participant.R`和`select_ccnpckg_participant.R`筛选出meanfd小于0.5的被试数据
 
-`predict_clusters_abide.py`使用asd研究中的分类器预测abide中剩余男性asd（大于等于13岁）的亚型
 
-
-### ABIDE 功能连接嵌入的描述性分析
-`group_analysis_SFC_embedding_ABIDE.R`
+### embedding描述性分析
+`group_analysis_SFC_embedding_ABIDE.R` （`group_analysis_SFC_nbwt_embedding_ABIDE.R`）
 整合了多步嵌入计算结果、被试人口学信息、站点信息以及基于机器学习的 ASD 亚型预测结果（仅包含男性被试），并生成可直接用于论文排版的高分辨率图像。
 
-所有分析结果统一输出至以下目录：
-/Users/xuerufan/DCM-Project-PhD-Study3-/output/ABIDE/
+所有分析结果统一输出至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc
 
 其中，表格结果与图像结果分别存放如下。
 
@@ -123,14 +120,8 @@ data/abide/timeseries/
    内容说明：  
    不同亚型在各嵌入步骤上的 embedding 均值与标准差。
 
-所有图像文件统一保存在以下子目录：
-/Users/xuerufan/DCM-Project-PhD-Study3-/output/ABIDE/plot/
-
-当前版本生成的主要图像为：
-功能网络 × 嵌入步骤的平均 embedding 热图  
-   文件名：  SFC_ABIDE_Heatmap.png  
-   图像说明：  
-   该图展示了三组被试（TD、ASD-L、ASD-H）在不同功能网络和嵌入步骤上的平均 embedding 分布情况，功能网络按系统组织排序，用于博士论文结果部分的核心图像展示。
+所有图像文件统一保存在以下子目录：/Volumes/Zuolab_XRF/output/abide/sfc/plot
+当前版本生成的主要图像为：sfc_heatmap_abide.png 功能网络 × 嵌入步骤的平均 embedding 热图   
 
 
 ### ABIDE 功能连接嵌入的组间对比分析（TD 参照）
