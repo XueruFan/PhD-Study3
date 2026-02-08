@@ -1,19 +1,18 @@
-# DCM-Project[PhD Study3]
+# PhD Study3&4
 
+## 研究三：SFC分析
 
-## Step 0: 拷贝需要的静息态数据
-
+### 拷贝需要的静息态数据
 `copy_CCNP_fsaverage5.ps1` 
 `unzip_CCNP.ps1`
 
+### 亚型预测
+`predict_clusters_abide.py`使用asd研究中的分类器预测abide中剩余男性asd（大于等于13岁）的亚型
 
-## Step : 每个网络选取1个ROI
-
+### 每个网络选取1个ROI
 `select_ROI_fsLR32k`
 
-
-## Step : 空间转换15个网络的ROI
-
+### 空间转换网络ROI
 将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **FreeSurfer 的 fsaverage5** 表面空间，从而与基于 fsaverage5 预处理的功能数据在**顶点层面实现精确对齐**。
 
 `export_ROI_wb.m`  
@@ -49,8 +48,7 @@ rh.DU15Net<N>_fsaverage5.nii.gz
 将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **fsLR-10k**表面空间。
 
 
-## Step : 可视化ROI
-
+### 可视化ROI
 `plot_Du15ROI_fsaverage5.py`
 在 **fsaverage5 皮层表面空间** 上可视化 **DU15 功能网络（15 个 network）**。将左右半球的 DU15 ROI（`.mgz`）合并为网络标签图，按照DU定义的 RGB 颜色进行渲染，并在膨胀皮层表面上生成多个视角（外侧、内侧、前、后、上、下）的高分辨率图像。
 visual/
@@ -67,8 +65,7 @@ output/ROI_fslr10k/
 DU15Net_fsLR10k.dscalar.nii
 
 
-## Step : 提取时间序列
-
+### 提取时间序列
 `extract_timeseries_CCNP_mac`、`extract_timeseries_CCNP_wins.m`和`extract_timeseries_ABIDE.mac.m`
 提取数据中ROI体素的时间序列，然后进行逐个时间序列的去均值和去线性漂移，两个半球的ROI内进行体素平均。
 CCNP
@@ -80,23 +77,23 @@ data/abide/timeseries/
 29096_DU15_network_ts.mat
 
 
-# 研究三 SFC分析
-
-`calculate_rDCM_ABIDE.m`和`calculate_rDCM_CCNP.m`计算SFC、zSFC和embedding
+### 计算SFC
+`calculate_SFC_ABIDE.m`和`calculate_SFC_CCNP.m`计算SFC、zSFC和embedding
+`calculate_SFC_nbwt_ABIDE.m`（不走回头路版）
 
 `sum_SFC_embedding_ABIDE.m`和`sum_SFC_embedding_CCNP.m`汇总所有被试的embedding值
+`sum_SFC_nbwt_embedding_ABIDE.m`（不走回头路版）
 
+
+### 筛选被试数据
 `select_ccnpckg_participant.R`和`select_ccnpckg_participant.R`筛选出meanfd小于0.5的被试数据
 
-`predict_clusters_abide.py`使用asd研究中的分类器预测abide中剩余男性asd（大于等于13岁）的亚型
 
-
-### ABIDE 功能连接嵌入的描述性分析
-`group_analysis_SFC_embedding_ABIDE.R`
+### embedding描述性分析
+`group_analysis_SFC_embedding_ABIDE.R` （`group_analysis_SFC_nbwt_embedding_ABIDE.R`）
 整合了多步嵌入计算结果、被试人口学信息、站点信息以及基于机器学习的 ASD 亚型预测结果（仅包含男性被试），并生成可直接用于论文排版的高分辨率图像。
 
-所有分析结果统一输出至以下目录：
-/Users/xuerufan/DCM-Project-PhD-Study3-/output/ABIDE/
+所有分析结果统一输出至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc
 
 其中，表格结果与图像结果分别存放如下。
 
@@ -123,14 +120,8 @@ data/abide/timeseries/
    内容说明：  
    不同亚型在各嵌入步骤上的 embedding 均值与标准差。
 
-所有图像文件统一保存在以下子目录：
-/Users/xuerufan/DCM-Project-PhD-Study3-/output/ABIDE/plot/
-
-当前版本生成的主要图像为：
-功能网络 × 嵌入步骤的平均 embedding 热图  
-   文件名：  SFC_ABIDE_Heatmap.png  
-   图像说明：  
-   该图展示了三组被试（TD、ASD-L、ASD-H）在不同功能网络和嵌入步骤上的平均 embedding 分布情况，功能网络按系统组织排序，用于博士论文结果部分的核心图像展示。
+所有图像文件统一保存在以下子目录：/Volumes/Zuolab_XRF/output/abide/sfc/plot
+当前版本生成的主要图像为：sfc_heatmap_abide.png 功能网络 × 嵌入步骤的平均 embedding 热图   
 
 
 ### ABIDE 功能连接嵌入的组间对比分析（TD 参照）
@@ -196,7 +187,162 @@ SFC_ABIDE_subtypes_contrasts.png
 - 当前结果未进行多重比较校正，显著性标记仅用于结果结构与空间分布的探索性展示，相关解释需在论文中谨慎限定。
 
 
+### ABIDE SFC 嵌入值与认知行为的相关分析（按 ASD 亚型分层）
+`corr_analysis_SFC_embedding_ABIDE_LH.R`
 
+本脚本用于分析 ABIDE 数据集中功能连接嵌入值（SFC embedding）与认知及临床行为量表之间的相关关系，并基于机器学习预测的 ASD 亚型结果，将分析分别在 ASD-L（亚型 1）与 ASD-H（亚型 2）男性被试中独立进行。
+
+该分析整合了多步 SFC 嵌入结果、最终纳入分析的被试列表、站点信息以及认知行为数据。在控制站点效应（SITE_ID）的前提下，分别对嵌入值与行为指标进行残差相关分析，并对多重比较结果进行 FDR 校正。整体分析流程与此前基于脑形态学百分位数（centile）的相关分析保持方法学一致性，便于结果的直接比较与整合。
+
+---
+
+### 数据输入说明
+
+本脚本依赖以下数据文件：
+
+1. **SFC embedding 结果（多步）**  
+   目录：  
+   `/Volumes/Zuolab_XRF/output/abide/sfc/sfc_embedding/`
+
+   内容说明：  
+   该目录包含 step01–step08 共 8 个 Excel 文件，每个文件对应一步 SFC 嵌入结果。行表示被试，列表示不同功能网络（Net01–Net15）的 embedding 值。
+
+2. **最终纳入分析的被试列表**  
+   文件名：  
+   `/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv`
+
+   内容说明：  
+   本研究中最终用于 SFC 分析的男性被试编号，用于在不同数据源之间进行统一筛选与对齐。
+
+3. **ASD 亚型预测结果（仅男性）**  
+   文件名：  
+   `/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv`
+
+   内容说明：  
+   基于机器学习模型得到的 ASD 亚型预测结果，其中  
+   subtype = 1 表示 ASD-L，  
+   subtype = 2 表示 ASD-H。
+
+4. **认知与临床行为数据**  
+   文件名：  
+   `/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/abide_A_all_240315.csv`
+
+   内容说明：  
+   包含 FIQ、ADOS、ADI-R 以及 SRS 等认知与临床行为量表数据，同时包含站点信息（SITE_ID）。
+
+---
+
+### 分析方法概述
+
+- 分析对象  
+  仅包含男性 ASD 被试，并根据机器学习预测结果按亚型（ASD-L 与 ASD-H）分别进行分析。
+
+- 自变量  
+  不同嵌入步骤（step01–step08）中，各功能网络对应的 SFC embedding 值。
+
+- 因变量  
+  认知与临床行为指标，包括 FIQ、ADOS、ADI-R 及 SRS 各分量表。其中 ADOS_2_RRB 作为非正态分布变量单独处理。
+
+- 统计方法  
+  对 ADOS_2_RRB 使用 Spearman 相关，对其余连续行为指标使用 Pearson 相关。在相关分析前，分别对自变量与因变量回归掉站点效应（SITE_ID），并基于残差计算相关系数。每一对变量要求有效样本量不少于 30。所有相关结果在每个嵌入步骤及亚型内进行 FDR 多重比较校正。
+
+---
+
+### 输出结果说明
+
+所有分析结果统一输出至以下目录：
+
+`/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr/`
+
+生成的主要结果文件为：
+
+1. **SFC embedding × 认知行为相关结果汇总表（按亚型）**  
+   文件名：  
+   `SFC_embedding_cognition_LH.csv`
+
+   内容说明：  
+   该表格汇总了所有嵌入步骤（step01–step08）、所有功能网络以及所有认知与临床行为指标在 ASD-L 与 ASD-H 亚型中的相关分析结果。表格包含以下字段：  
+   - step：嵌入步骤  
+   - cluster：亚型（L / H）  
+   - name_brain：功能网络  
+   - name_cog：认知或行为指标  
+   - coef：相关系数  
+   - p_value：原始 p 值  
+   - P_adj：FDR 校正后的 p 值  
+   - df：残差模型自由度  
+
+该结果文件可直接用于论文结果筛选、绘制相关热图或进一步的亚型差异比较分析。
+
+---
+
+### 显著相关结果的网络重命名与层级整理
+
+在完成 SFC embedding 与认知行为的相关分析后，本脚本进一步对结果数据进行后处理，以便直接用于论文结果展示与可视化分析。
+
+具体而言，首先将分析结果中以 Net01–Net15 表示的功能网络，映射为对应的功能系统名称缩写（如 VIS-P、DN-A、FPN-B 等），网络定义基于既定的功能网络分区方案。随后，仅保留在多重比较校正后达到统计显著性的结果（P < 0.05）。
+
+在整理后的结果表中，所有显著结果按照以下层级顺序进行排列：  
+1）嵌入步骤（step01–step08），  
+2）功能网络（按系统名称排序），  
+3）ASD 亚型（ASD-L，ASD-H）。
+
+---
+
+### 显著结果汇总表
+
+后处理步骤生成的最终显著结果文件为：
+
+`SFC_embedding_cognition_LH_significant.csv`
+
+该文件包含以下信息：  
+- step：SFC 嵌入步骤  
+- cluster：ASD 亚型（L / H）  
+- network_abbr：功能网络名称缩写  
+- name_cog：认知或临床行为指标  
+- coef：相关系数  
+- p_value：原始 p 值  
+- P_adj：FDR 校正后的 p 值  
+- df：残差模型自由度  
+
+该结果表为论文结果部分和补充材料中网络层级与嵌入步骤层级分析的核心输入，可直接用于生成分亚型的相关模式图或热图展示。
+
+---
+
+### SFC embedding × 认知行为的个体层面可视化（自动生成散点图）
+
+在完成 SFC embedding 与认知行为指标的相关分析后，本脚本基于统计显著结果，自动生成对应的个体层面散点图，用于直观展示功能连接嵌入与行为指标之间的关系模式。该流程严格以相关分析结果为输入，仅对达到统计显著的组合进行作图，避免人工筛选带来的主观偏差，确保结果展示的系统性与可复现性。
+
+---
+
+### 作图逻辑说明
+
+对于每一个达到显著性的分析结果，脚本自动遍历以下维度组合：
+
+- SFC 嵌入步骤（step01–step08）
+- 功能网络（Net01–Net15）
+- 认知或临床行为指标（如 FIQ、SRS、ADOS 等）
+
+针对每一个 *step × network × behavior* 组合，生成一张独立的散点图，具体作图策略如下：
+
+- 每个散点代表一名被试
+- 横轴为对应功能网络的 SFC embedding 值（残差）
+- 纵轴为对应认知或行为指标（残差）
+- 在作图前对所有变量统一控制扫描站点效应（SITE_ID）
+- 使用线性回归趋势线（lm）展示组内关系
+- 同时展示三组被试：
+  - TD（灰色）
+  - ASD-L（绿色）
+  - ASD-H（红色）
+
+该可视化方式与前述相关分析在数据清洗、协变量控制及统计模型上保持一致，确保图像展示与统计检验具有严格的方法学对应关系。
+
+---
+
+### 自动化批量生成
+
+作图流程完全自动化，不需要手动指定嵌入步骤、功能网络或行为指标。脚本根据相关分析结果表中的显著性筛选条件（如 *p* < 0.05 或 FDR 校正后 *p* < 0.05），自动生成所有对应的散点图。
+
+所有图像文件统一保存至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc/plot/corr
 
 
 
