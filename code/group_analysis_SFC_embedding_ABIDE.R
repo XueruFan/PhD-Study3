@@ -29,10 +29,10 @@ theme_set(
 # ----------------------------
 # 1. Paths & parameters
 # ----------------------------
-embedding_dir <- "/Volumes/Zuolab_XRF/data/abide/stats/SFC_Embedding"
+embedding_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_embedding"
 demo_path     <- "/Volumes/Zuolab_XRF/supplement/abide_demo.xlsx"
 site_dir      <- "/Volumes/Zuolab_XRF/data/abide/sublist"
-cluster_path  <- "/Users/xuerufan/DCM-Project-PhD-Study3-/output/ABIDE/abide_cluster_predictions_male.csv"
+cluster_path  <- "/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv"
 
 out_root <- "/Volumes/Zuolab_XRF/output/abide/sfc"
 plot_dir <- file.path(out_root, "plot")
@@ -40,7 +40,7 @@ plot_dir <- file.path(out_root, "plot")
 dir.create(out_root, showWarnings = FALSE, recursive = TRUE)
 dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
 
-step_max <- 8
+step_max <- 7
 nNet     <- 15
 
 # ----------------------------
@@ -194,6 +194,17 @@ desc_step <- data_all %>%
 
 write_csv(desc_step, file.path(out_root, "sfc_step.csv"))
 
+
+# ============================================================
+# 9.5 Network × Step mean embedding (for heatmap)
+# ============================================================
+mean_mat <- data_all %>%
+  group_by(Group, Network, Step) %>%
+  summarise(
+    mean_embedding = mean(Embedding),
+    .groups = "drop"
+  )
+
 # ============================================================
 # 10. Key descriptive visualizations (High-res PNG)
 # ============================================================
@@ -322,7 +333,7 @@ p_heatmap <- ggplot(
 
 
 ggsave(
-  filename = file.path(plot_dir, "SFC_ABIDE_Heatmap.png"),
+  filename = file.path(plot_dir, "sfc_heatmap_abide.png"),
   plot     = p_heatmap,
   width    = 3200,
   height   = 2200,
