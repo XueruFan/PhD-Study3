@@ -124,8 +124,7 @@ data/abide/timeseries/
 当前版本生成的主要图像为：sfc_heatmap_abide.png 功能网络 × 嵌入步骤的平均 embedding 热图   
 
 
-### ABIDE 功能连接嵌入的组间对比分析（TD 参照）
-
+### SFEI组间对比分析
 `group_analysis_SFC_embedding_ABIDE_contrast.R`和`group_contrast_SFC_nbtw_embedding_ABIDE.R`
 该脚本在前期 SFC embedding 计算与描述性分析的基础上，进一步对 ABIDE 数据集中不同临床分组相对于 TD 组的 embedding 差异进行系统性统计建模与可视化分析。分析整合了多步嵌入结果、被试人口学信息、扫描站点信息以及基于机器学习预测的 ASD 亚型标签，仅纳入男性被试，以避免性别混杂效应。
 
@@ -152,79 +151,41 @@ data/abide/timeseries/
 - 当前结果未进行多重比较校正，显著性标记仅用于结果结构与空间分布的探索性展示，相关解释需在论文中谨慎限定。
 
 
-### ABIDE SFC 嵌入值与认知行为的相关分析（按 ASD 亚型分层）
-`corr_analysis_SFC_embedding_ABIDE_LH.R`
-
+### SFEI与认知行为的相关分析
+`statistic_SFC_correlations_abide.R`
 本脚本用于分析 ABIDE 数据集中功能连接嵌入值（SFC embedding）与认知及临床行为量表之间的相关关系，并基于机器学习预测的 ASD 亚型结果，将分析分别在 ASD-L（亚型 1）与 ASD-H（亚型 2）男性被试中独立进行。
-
 该分析整合了多步 SFC 嵌入结果、最终纳入分析的被试列表、站点信息以及认知行为数据。在控制站点效应（SITE_ID）的前提下，分别对嵌入值与行为指标进行残差相关分析，并对多重比较结果进行 FDR 校正。整体分析流程与此前基于脑形态学百分位数（centile）的相关分析保持方法学一致性，便于结果的直接比较与整合。
-
----
-
-### 数据输入说明
 
 本脚本依赖以下数据文件：
 
-1. **SFC embedding 结果（多步）**  
-   目录：  
-   `/Volumes/Zuolab_XRF/output/abide/sfc/sfc_embedding/`
-
-   内容说明：  
+1. **SFC embedding 结果（多步）**  `/Volumes/Zuolab_XRF/output/abide/sfc/sfc_embedding/`
    该目录包含 step01–step08 共 8 个 Excel 文件，每个文件对应一步 SFC 嵌入结果。行表示被试，列表示不同功能网络（Net01–Net15）的 embedding 值。
 
-2. **最终纳入分析的被试列表**  
-   文件名：  
-   `/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv`
-
-   内容说明：  
+2. **最终纳入分析的被试列表**  `/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv` 
    本研究中最终用于 SFC 分析的男性被试编号，用于在不同数据源之间进行统一筛选与对齐。
 
-3. **ASD 亚型预测结果（仅男性）**  
-   文件名：  
-   `/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv`
+3. **ASD 亚型预测结果（仅男性）**   `/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv`  
 
-   内容说明：  
-   基于机器学习模型得到的 ASD 亚型预测结果，其中  
-   subtype = 1 表示 ASD-L，  
-   subtype = 2 表示 ASD-H。
-
-4. **认知与临床行为数据**  
-   文件名：  
-   `/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/abide_A_all_240315.csv`
-
-   内容说明：  
+4. **认知与临床行为数据**     `/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/abide_A_all_240315.csv`  
    包含 FIQ、ADOS、ADI-R 以及 SRS 等认知与临床行为量表数据，同时包含站点信息（SITE_ID）。
 
----
-
 ### 分析方法概述
-
-- 分析对象  
-  仅包含男性 ASD 被试，并根据机器学习预测结果按亚型（ASD-L 与 ASD-H）分别进行分析。
-
 - 自变量  
   不同嵌入步骤（step01–step08）中，各功能网络对应的 SFC embedding 值。
-
 - 因变量  
   认知与临床行为指标，包括 FIQ、ADOS、ADI-R 及 SRS 各分量表。其中 ADOS_2_RRB 作为非正态分布变量单独处理。
-
 - 统计方法  
   对 ADOS_2_RRB 使用 Spearman 相关，对其余连续行为指标使用 Pearson 相关。在相关分析前，分别对自变量与因变量回归掉站点效应（SITE_ID），并基于残差计算相关系数。每一对变量要求有效样本量不少于 30。所有相关结果在每个嵌入步骤及亚型内进行 FDR 多重比较校正。
 
----
-
 ### 输出结果说明
 
-所有分析结果统一输出至以下目录：
-
-`/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr/`
+所有分析结果统一输出至以下目录：`/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr/`
 
 生成的主要结果文件为：
 
 1. **SFC embedding × 认知行为相关结果汇总表（按亚型）**  
    文件名：  
-   `SFC_embedding_cognition_LH.csv`
-
+   `/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr/SFEI_nbwt_cognition_LH.csv`
    内容说明：  
    该表格汇总了所有嵌入步骤（step01–step08）、所有功能网络以及所有认知与临床行为指标在 ASD-L 与 ASD-H 亚型中的相关分析结果。表格包含以下字段：  
    - step：嵌入步骤  
@@ -234,30 +195,18 @@ data/abide/timeseries/
    - coef：相关系数  
    - p_value：原始 p 值  
    - P_adj：FDR 校正后的 p 值  
-   - df：残差模型自由度  
-
-该结果文件可直接用于论文结果筛选、绘制相关热图或进一步的亚型差异比较分析。
-
----
-
+   - df：残差模型自由度
+   - 
 ### 显著相关结果的网络重命名与层级整理
-
 在完成 SFC embedding 与认知行为的相关分析后，本脚本进一步对结果数据进行后处理，以便直接用于论文结果展示与可视化分析。
-
-具体而言，首先将分析结果中以 Net01–Net15 表示的功能网络，映射为对应的功能系统名称缩写（如 VIS-P、DN-A、FPN-B 等），网络定义基于既定的功能网络分区方案。随后，仅保留在多重比较校正后达到统计显著性的结果（P < 0.05）。
+具体而言，首先将分析结果中以 Net01–Net15 表示的功能网络，映射为对应的功能系统名称缩写（如 VIS-P、DN-A、FPN-B 等），网络定义基于既定的功能网络分区方案。随后，仅保统计显著的结果（P < 0.05）。
 
 在整理后的结果表中，所有显著结果按照以下层级顺序进行排列：  
 1）嵌入步骤（step01–step08），  
 2）功能网络（按系统名称排序），  
 3）ASD 亚型（ASD-L，ASD-H）。
 
----
-
-### 显著结果汇总表
-
-后处理步骤生成的最终显著结果文件为：
-
-`SFC_embedding_cognition_LH_significant.csv`
+后处理步骤生成的最终显著结果文件为：`/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr/SFEI_nbwt_cognition_LH_significant.csv`
 
 该文件包含以下信息：  
 - step：SFC 嵌入步骤  
@@ -271,24 +220,16 @@ data/abide/timeseries/
 
 该结果表为论文结果部分和补充材料中网络层级与嵌入步骤层级分析的核心输入，可直接用于生成分亚型的相关模式图或热图展示。
 
----
-
 ### SFC embedding × 认知行为的个体层面可视化（自动生成散点图）
 
 在完成 SFC embedding 与认知行为指标的相关分析后，本脚本基于统计显著结果，自动生成对应的个体层面散点图，用于直观展示功能连接嵌入与行为指标之间的关系模式。该流程严格以相关分析结果为输入，仅对达到统计显著的组合进行作图，避免人工筛选带来的主观偏差，确保结果展示的系统性与可复现性。
 
----
-
-### 作图逻辑说明
-
 对于每一个达到显著性的分析结果，脚本自动遍历以下维度组合：
-
 - SFC 嵌入步骤（step01–step08）
 - 功能网络（Net01–Net15）
 - 认知或临床行为指标（如 FIQ、SRS、ADOS 等）
 
 针对每一个 *step × network × behavior* 组合，生成一张独立的散点图，具体作图策略如下：
-
 - 每个散点代表一名被试
 - 横轴为对应功能网络的 SFC embedding 值（残差）
 - 纵轴为对应认知或行为指标（残差）
@@ -298,15 +239,7 @@ data/abide/timeseries/
   - TD（灰色）
   - ASD-L（绿色）
   - ASD-H（红色）
-
 该可视化方式与前述相关分析在数据清洗、协变量控制及统计模型上保持一致，确保图像展示与统计检验具有严格的方法学对应关系。
-
----
-
-### 自动化批量生成
-
-作图流程完全自动化，不需要手动指定嵌入步骤、功能网络或行为指标。脚本根据相关分析结果表中的显著性筛选条件（如 *p* < 0.05 或 FDR 校正后 *p* < 0.05），自动生成所有对应的散点图。
-
 所有图像文件统一保存至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc/plot/corr
 
 
