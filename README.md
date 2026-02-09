@@ -9,6 +9,11 @@
 ### 亚型预测
 `predict_clusters_abide.py`使用asd研究中的分类器（）预测abide中剩余男性asd（大于等于13岁）的亚型
 
+### 被试汇总
+把原来训练的到的分型，和现在预测的到的分型，和典型对照所有人汇总到一起
+`sum_predict_all_abide.R`
+/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv
+
 ### 每个网络选取1个ROI
 `select_ROI_fsLR32k`
 
