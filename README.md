@@ -1,4 +1,4 @@
-# PhD Study3&4
+# PhD Study3
 
 ## 研究三：SFC分析
 
