@@ -15,14 +15,14 @@ sapply(packages, require, character.only = TRUE)
 ## 路径
 ## ==============================
 
-sfcDir  <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_embedding"
+sfcDir  <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_nbtw_embedding"
 subjFile <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv"
 phenoFile <- "/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/abide_A_all_240315.csv"
 clusterFile <- "/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv"
 
 outDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr"
 dir.create(outDir, showWarnings = FALSE, recursive = TRUE)
-plotDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/plot"
+plotDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/plot/corr"
 
 ## ==============================
 ## 读取被试列表
@@ -192,7 +192,7 @@ final_results <- bind_rows(all_results) %>% arrange(p_value)
 
 write.csv(
   final_results,
-  file.path(outDir, "SFC_embedding_cognition_LH.csv"),
+  file.path(outDir, "SFEI_nbwt_cognition_LH.csv"),
   row.names = FALSE
 )
 
@@ -259,7 +259,7 @@ final_results_sig <- final_results_sig %>%
 ## -------- 7. 保存最终显著结果表
 write.csv(
   final_results_sig,
-  file.path(outDir, "SFC_embedding_cognition_LH_significant.csv"),
+  file.path(outDir, "SFEI_nbwt_cognition_LH_significant.csv"),
   row.names = FALSE
 )
 
@@ -382,7 +382,7 @@ for (i in seq_len(nrow(sig_results))) {
       name = NULL
     ) +
     labs(
-      x = paste(net_col, "SFC embedding (residual)"),
+      x = paste(net_col, "SFEI (residual)"),
       y = paste(behavior, "(residual)"),
       title = paste(step_for_plot, ":", net_col, "×", behavior)
     ) +
@@ -397,7 +397,7 @@ for (i in seq_len(nrow(sig_results))) {
   ## 保存图像
   ## -------------------------------
   out_name <- paste0(
-    "Scatter_",
+    "SFEI_nbwt_",
     step_for_plot, "_",
     net_col, "_",
     behavior,
@@ -407,7 +407,7 @@ for (i in seq_len(nrow(sig_results))) {
   ggsave(
     filename = out_name,
     plot = p,
-    path = file.path(plotDir, "corr"),
+    path = plotDir,
     width = 6,
     height = 6,
     dpi = 300
