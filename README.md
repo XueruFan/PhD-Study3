@@ -7,7 +7,7 @@
 `unzip_CCNP.ps1`
 
 ### 亚型预测
-`predict_clusters_abide.py`使用asd研究中的分类器预测abide中剩余男性asd（大于等于13岁）的亚型
+`predict_clusters_abide.py`使用asd研究中的分类器（）预测abide中剩余男性asd（大于等于13岁）的亚型
 
 ### 每个网络选取1个ROI
 `select_ROI_fsLR32k`
