@@ -95,7 +95,7 @@ data/abide/timeseries/
 
 
 ### embedding描述性分析
-`group_analysis_SFC_embedding_ABIDE.R` （`group_analysis_SFC_nbwt_embedding_ABIDE.R`）
+`group_analysis_SFC_nbwt_embedding_ABIDE.R`
 整合了多步嵌入计算结果、被试人口学信息、站点信息以及基于机器学习的 ASD 亚型预测结果（仅包含男性被试），并生成可直接用于论文排版的高分辨率图像。
 
 所有分析结果统一输出至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc
@@ -132,7 +132,7 @@ data/abide/timeseries/
 
 
 ### SFEI组间对比分析
-`group_analysis_SFC_embedding_ABIDE_contrast.R`和`group_contrast_SFC_nbtw_embedding_ABIDE.R`
+`group_contrast_SFC_nbtw_embedding_ABIDE.R`
 该脚本在前期 SFC embedding 计算与描述性分析的基础上，进一步对 ABIDE 数据集中不同临床分组相对于 TD 组的 embedding 差异进行系统性统计建模与可视化分析。分析整合了多步嵌入结果、被试人口学信息、扫描站点信息以及基于机器学习预测的 ASD 亚型标签，仅纳入男性被试，以避免性别混杂效应。
 
 ## 1. 组间对比统计结果（Network × Step）
