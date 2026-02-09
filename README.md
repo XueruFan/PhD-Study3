@@ -99,6 +99,8 @@ data/abide/timeseries/
 
 生成最终纳入分析的被试编号文件/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv
 
+以及在最后的最后，生成了纳入分析被试的汇总信息，包含编号、站点、分型、年龄。  地址在/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_summary.csv
+
 1. 人口学描述统计（按亚型）  
    文件名：  
    sfc_demo.csv  
