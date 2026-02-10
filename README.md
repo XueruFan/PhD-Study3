@@ -1,4 +1,4 @@
-# PhD Study3&4
+# PhD Study3
 
 ## 研究三：SFC分析
 
@@ -8,6 +8,11 @@
 
 ### 亚型预测
 `predict_clusters_abide.py`使用asd研究中的分类器（）预测abide中剩余男性asd（大于等于13岁）的亚型
+
+### 被试汇总
+把原来训练的到的分型，和现在预测的到的分型，和典型对照所有人汇总到一起
+`sum_predict_all_abide.R`
+/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv
 
 ### 每个网络选取1个ROI
 `select_ROI_fsLR32k`
@@ -85,12 +90,42 @@ data/abide/timeseries/
 `sum_SFC_nbwt_embedding_ABIDE.m`（不走回头路版）
 
 
+### zSFC 分 subtype × step 群体均值汇总
+`mean_SFC_nbtw_by_subtype_step_ABIDE.m`
+该脚本用于对 ABIDE 数据集中已经计算完成的zSFC结果进行进一步的群体层级汇总分析。对不同 subtype 在每一个嵌入 step 上的 zSFC 矩阵进行被试层面的平均，并输出为可直接用于后续统计建模与可视化分析的 CSV 文件。
+
+## 输入数据说明
+1.1 zSFC 数据 /Volumes/Zuolab_XRF/data/abide/SFCnbtw/
+该目录包含每名被试在不同嵌入 step 上计算得到的 zSFC 矩阵，文件格式为 .mat，命名规则示例如下：
+0029096_DU15_SFC_nbtw_step01.mat
+29097_DU15_SFC_nbtw_step08.mat
+
+每个 .mat 文件中包含变量：zSFC：N × N 的静态功能连接矩阵（z 标准化）
+
+1.2 被试分组信息 /Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_summary.csv
+该 CSV 文件至少包含以下字段：
+- Subject：被试编号（不含前导 0）
+- Subtype：被试所属临床分组或亚型（如 TD、ASD-L、ASD-H）
+
+## 输出结果说明
+3.1 群体平均 zSFC 矩阵（subtype × step）/Volumes/Zuolab_XRF/output/abide/sfc/stat/meanzSFC
+该目录下每一个 CSV 文件对应一个 subtype × step 组合，文件命名规则如下：
+zSFC_mean_TD_step01.csv
+zSFC_mean_ASD_L_step03.csv
+zSFC_mean_ASD_H_step08.csv
+
+每个 CSV 文件内容为：
+- 一个 N × N 的矩阵
+- 表示该 subtype 在对应 step 下的 zSFC 被试均值
+- 行列顺序与原始 zSFC 矩阵保持一致
+
+
 ### 筛选被试数据
 `select_ccnpckg_participant.R`和`select_ccnpckg_participant.R`筛选出meanfd小于0.5的被试数据
 
 
 ### embedding描述性分析
-`group_analysis_SFC_embedding_ABIDE.R` （`group_analysis_SFC_nbwt_embedding_ABIDE.R`）
+`group_analysis_SFC_nbwt_embedding_ABIDE.R`
 整合了多步嵌入计算结果、被试人口学信息、站点信息以及基于机器学习的 ASD 亚型预测结果（仅包含男性被试），并生成可直接用于论文排版的高分辨率图像。
 
 所有分析结果统一输出至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc
@@ -98,6 +133,8 @@ data/abide/timeseries/
 其中，表格结果与图像结果分别存放如下。
 
 生成最终纳入分析的被试编号文件/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv
+
+以及在最后的最后，生成了纳入分析被试的汇总信息，包含编号、站点、分型、年龄。  地址在/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_summary.csv
 
 1. 人口学描述统计（按亚型）  
    文件名：  
@@ -125,7 +162,7 @@ data/abide/timeseries/
 
 
 ### SFEI组间对比分析
-`group_analysis_SFC_embedding_ABIDE_contrast.R`和`group_contrast_SFC_nbtw_embedding_ABIDE.R`
+`group_contrast_SFC_nbtw_embedding_ABIDE.R`
 该脚本在前期 SFC embedding 计算与描述性分析的基础上，进一步对 ABIDE 数据集中不同临床分组相对于 TD 组的 embedding 差异进行系统性统计建模与可视化分析。分析整合了多步嵌入结果、被试人口学信息、扫描站点信息以及基于机器学习预测的 ASD 亚型标签，仅纳入男性被试，以避免性别混杂效应。
 
 ## 1. 组间对比统计结果（Network × Step）
@@ -133,7 +170,8 @@ data/abide/timeseries/
 该文件包含在每一个功能网络 × 嵌入步骤组合上进行的线性模型组间对比结果。模型在控制年龄（AGE_AT_SCAN）和扫描站点（site）后，分别估计以下三类对比：
 - ASD（合并组） vs TD  
 - ASD-L vs TD  
-- ASD-H vs TD  
+- ASD-H vs TD
+- L vs H
 输出字段包括对比的估计值（estimate）、标准误、t 值、原始 p 值等统计量，并额外标记是否达到未经多重校正的显著性水平（p < 0.05），用于后续结果展示与探索性解释。
 
 ## 2. 功能网络 × 嵌入步骤的组间差异热图
@@ -141,7 +179,8 @@ data/abide/timeseries/
 该图以热图形式展示不同功能网络和嵌入步骤上 embedding 的组间差异估计值（ΔEmbedding），按功能系统组织顺序排列网络维度，并在三个并列面板中分别呈现：
 - ASD vs TD  
 - ASD-L vs TD  
-- ASD-H vs TD  
+- ASD-H vs TD
+- L vs H
 颜色表示回归模型中组别效应的方向与大小，黑色空心圆标记表示在对应 Network × Step 位置达到原始显著性水平（p < 0.05）的对比结果。图像采用透明背景与高分辨率设置，可直接用于博士论文结果章节的核心图像展示。
 
 ## 3. 方法学要点说明
