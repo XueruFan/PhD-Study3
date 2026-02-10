@@ -32,7 +32,7 @@ theme_set(
 embedding_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_nbtw_embedding"
 demo_path     <- "/Volumes/Zuolab_XRF/supplement/abide_demo.xlsx"
 site_dir      <- "/Volumes/Zuolab_XRF/data/abide/sublist"
-cluster_path  <- "/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv"
+cluster_path  <- "/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv"
 
 out_root <- "/Volumes/Zuolab_XRF/output/abide/sfc"
 plot_dir <- file.path(out_root, "plot")
@@ -146,8 +146,8 @@ data_all <- embedding_long %>%
   )
 
 participant_for_analysis <- data.frame(unique(data_all$Subject))
-# write_csv(participant_for_analysis, file.path(out_root, "sfc_participant_for_analysis.csv"),
-          # col_names = F)
+write_csv(participant_for_analysis, file.path(out_root, "sfc_participant_for_analysis.csv"),
+          col_names = F)
 
 # ============================================================
 # 7. Descriptive statistics (Table 1 by SUBTYPE)
@@ -162,7 +162,7 @@ demo_table <- data_all %>%
     .groups  = "drop"
   )
 
-# write_csv(demo_table, file.path(out_root, "sfc_demo.csv"))
+write_csv(demo_table, file.path(out_root, "sfc_demo.csv"))
 
 # ============================================================
 # 8. Network-wise descriptive stats
@@ -257,26 +257,28 @@ library(scico)
 
 network_map <- tibble(
   Network = c(
-    "Net01", "Net13",          # Visual
-    "Net05",                  # Auditory
-    "Net08", "Net04", "Net06", # Somatomotor / Premotor
-    "Net12", "Net07",          # Attention
-    "Net09",                  # Language
-    "Net02",                  # Cingulo-Opercular
-    "Net11", "Net10",          # Frontoparietal
-    "Net14",                  # Salience / PMN
-    "Net15", "Net03"           # Default Mode
+    "Net13", "Net01", 
+    "Net04", "Net08",
+    "Net05",  
+    "Net02", 
+    "Net07", "Net12",
+    "Net06",
+    "Net14", 
+    "Net10", "Net11",
+    "Net03", "Net15", 
+    "Net09"
   ),
   NetworkLabel = c(
-    "VIS-P", "VIS-C",
+    "VIS-C", "VIS-P",
+    "SMOT-B", "SMOT-A",
     "AUD",
-    "SMOT-A", "SMOT-B", "PM-PPr",
-    "dATN-A", "dATN-B",
-    "LANG",
-    "CG-OP",
-    "FPN-A", "FPN-B",
+    "AN",
+    "dATN-B", "dATN-A",
+    "PM-PPr", 
     "SAL/PMN",
-    "DN-A", "DN-B"
+    "FPN-B", "FPN-A",
+    "DN-B", "DN-A",
+    "LANG"
   ),
   Order = 1:15
 )
@@ -301,33 +303,39 @@ p_heatmap <- ggplot(
   )
 ) +
   geom_tile(
-    color = "white",
+    color = "lightgray",
     linewidth = 0.4
   ) +
   facet_wrap(
     ~ Group,
     nrow = 1
   ) +
-  scale_fill_scico(
-    palette = "roma",
-    direction = -1,
+  scale_fill_gradient(
+    low  = "white",
+    high = "#ff6666",
     limits = range(mean_mat_plot$mean_embedding),
-    name = "平均\nEmbedding"
+    name = "SFEI均值"
   ) +
+  # scale_fill_scico(
+  #   palette = "roma",
+  #   direction = -1,
+  #   limits = range(mean_mat_plot$mean_embedding),
+  #   name = "SFEI均值"
+  # ) +
   labs(
-    title = "各亚型在不同步骤与功能网络上的平均 Embedding",
-    x     = "步骤（Step）",
+    x     = "SFC步数",
     y     = "功能网络"
   ) +
   theme_bw(base_size = 22) +
   theme(
-    plot.title   = element_text(size = 30, face = "bold", hjust = 0.5),
-    strip.text   = element_text(size = 22, face = "bold"),
-    axis.text.y  = element_text(size = 20),
-    axis.text.x  = element_text(size = 18),
-    axis.title   = element_text(size = 22),
-    legend.title = element_text(size = 20),
-    legend.text  = element_text(size = 18),
+    # plot.title   = element_text(size = 40, face = "bold", hjust = 0.5),
+    plot.title   = element_blank(),
+    strip.text   = element_text(size = 32, face = "bold"),
+    axis.text.y  = element_text(size = 30),
+    axis.text.x  = element_text(size = 30),
+    axis.title   = element_text(size = 35),
+    legend.title = element_text(size = 35),
+    legend.text  = element_text(size = 30),
     panel.grid   = element_blank()
   )
 
@@ -339,4 +347,42 @@ ggsave(
   height   = 2200,
   dpi      = 300,
   units    = "px"
+)
+
+# ============================================================
+# 11. Build final participant summary table for analysis
+# ============================================================
+
+participant_summary <- participant_for_analysis %>%
+  rename(Subject = unique.data_all.Subject.) %>%  # 如果列名是自动生成的
+  left_join(
+    demo %>%
+      transmute(
+        Subject = as.character(Participant),
+        Age     = AGE_AT_SCAN,
+        Sex     = SEX
+      ),
+    by = "Subject"
+  ) %>%
+  left_join(
+    cluster %>%
+      transmute(
+        Subject,
+        Subtype = Group
+      ),
+    by = "Subject"
+  ) %>%
+  left_join(
+    site_map,
+    by = "Subject"
+  ) %>%
+  arrange(Subtype, Subject)
+
+# 查看前几行
+head(participant_summary)
+
+# 如需导出
+write_csv(
+  participant_summary,
+  file.path(out_root, "sfc_participant_summary.csv")
 )
