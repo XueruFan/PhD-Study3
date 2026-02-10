@@ -1,8 +1,7 @@
 # ============================================================
 # ABIDE SFC embedding
-# Pairwise contrasts vs TD
-# 3-panel heatmap with raw-p significance
-# Transparent background
+# Pairwise contrasts (TD, ASD subtypes, and L vs H)
+# 4-panel heatmap with raw-p significance
 # ============================================================
 
 rm(list = ls())
@@ -30,13 +29,13 @@ showtext_auto()
 embedding_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_nbtw_embedding"
 demo_path     <- "/Volumes/Zuolab_XRF/supplement/abide_demo.xlsx"
 site_dir      <- "/Volumes/Zuolab_XRF/data/abide/sublist"
-cluster_path  <- "/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv"
+cluster_path  <- "/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv"
 
-out_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/difference"
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-
+out_dir  <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/difference"
 plot_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/plot/difference"
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+dir.create(out_dir,  recursive = TRUE, showWarnings = FALSE)
+dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
 step_max <- 7
 nNet     <- 15
@@ -46,19 +45,16 @@ nNet     <- 15
 # ----------------------------
 network_map <- tibble(
   Network = c(
-    "Net01","Net13","Net05",
-    "Net08","Net04","Net06",
-    "Net12","Net07","Net09",
-    "Net02","Net11","Net10",
-    "Net14","Net15","Net03"
+    "Net13","Net01","Net04","Net08","Net05",
+    "Net02","Net07","Net12","Net06","Net14",
+    "Net10","Net11","Net03","Net15","Net09"
   ),
   NetworkLabel = c(
-    "VIS-P","VIS-C","AUD",
-    "SMOT-A","SMOT-B","PM-PPr",
-    "dATN-A","dATN-B","LANG",
-    "CG-OP","FPN-A","FPN-B",
-    "SAL/PMN","DN-A","DN-B"
-  )
+    "VIS-C","VIS-P","SMOT-B","SMOT-A","AUD",
+    "AN","dATN-B","dATN-A","PM-PPr","SAL/PMN",
+    "FPN-B","FPN-A","DN-B","DN-A","LANG"
+  ),
+  Order = 1:15
 )
 
 # ----------------------------
@@ -77,15 +73,18 @@ demo <- read_xlsx(demo_path) %>%
 cluster <- read_csv(cluster_path, show_col_types = FALSE) %>%
   transmute(
     Subject = as.character(participant),
+    subtype = as.integer(subtype)
+  ) %>%
+  mutate(
     Group = factor(
       subtype,
-      levels = c(0,1,2),
-      labels = c("TD","L","H")
+      levels = c(0, 1, 2),
+      labels = c("TD", "L", "H")
     )
   )
 
 # ----------------------------
-# 4. Build subject → site mapping
+# Site mapping
 # ----------------------------
 site_map <- list.files(
   site_dir,
@@ -100,25 +99,18 @@ site_map <- list.files(
       toupper()
     
     subjects <- read_lines(f) %>%
-      as.character() %>%
       as.integer() %>%
       as.character()
     
-    tibble(
-      Subject = subjects,
-      site    = site
-    )
+    tibble(Subject = subjects, site = site)
   })
 
-## ----------------------------
-# 5. Read & merge embedding (all steps)
+# ----------------------------
+# Read embedding
 # ----------------------------
 read_one_step <- function(step) {
   
-  fname <- sprintf("step%02d.xlsx", step)
-  fpath <- file.path(embedding_dir, fname)
-  
-  df <- read_excel(fpath)
+  df <- read_excel(file.path(embedding_dir, sprintf("step%02d.xlsx", step)))
   
   df %>%
     pivot_longer(
@@ -139,9 +131,9 @@ embedding_long <- map_dfr(1:step_max, read_one_step)
 # Merge all
 # ----------------------------
 data_all <- embedding_long %>%
-  left_join(demo, by = "Subject") %>%
+  left_join(demo,    by = "Subject") %>%
   left_join(cluster, by = "Subject") %>%
-  left_join(site_map, by = "Subject") %>%
+  left_join(site_map,by = "Subject") %>%
   filter(
     SEX == "Male",
     !is.na(Group),
@@ -152,30 +144,26 @@ data_all <- embedding_long %>%
     Embedding = as.numeric(Embedding)
   )
 
-# ============================================================
-# Construct merged ASD group
-# ============================================================
+# ----------------------------
+# Merged ASD group
+# ----------------------------
 data_all <- data_all %>%
   mutate(
-    Group_ASD = case_when(
-      Group == "TD"                 ~ "TD",
-      Group %in% c("L","H") ~ "ASD"
-    ),
-    Group_ASD = factor(Group_ASD, levels = c("TD","ASD"))
+    Group_ASD = factor(
+      if_else(Group == "TD", "TD", "ASD"),
+      levels = c("TD","ASD")
+    )
   )
 
 # ============================================================
-# Pairwise contrast model functions
+# Contrast functions
 # ============================================================
-
-library(emmeans)
 
 fit_asd_vs_td <- function(df) {
-  m <- lm(
-    Embedding ~ Group_ASD + AGE_AT_SCAN + site,
-    data = df
-  )
+  
+  m <- lm(Embedding ~ Group_ASD + AGE_AT_SCAN + site, data = df)
   em <- emmeans(m, ~ Group_ASD)
+  
   as.data.frame(
     contrast(em, "trt.vs.ctrl", ref = "TD")
   ) %>%
@@ -183,15 +171,14 @@ fit_asd_vs_td <- function(df) {
 }
 
 fit_subtype_vs_td <- function(df) {
-  m <- lm(
-    Embedding ~ Group + AGE_AT_SCAN + site,
-    data = df
-  )
+  
+  m <- lm(Embedding ~ Group + AGE_AT_SCAN + site, data = df)
   em <- emmeans(m, ~ Group)
+  
   as.data.frame(
     contrast(em, "trt.vs.ctrl", ref = "TD")
   ) %>%
-    filter(contrast %in% c("L - TD", "H - TD")) %>%
+    filter(contrast %in% c("L - TD","H - TD")) %>%
     mutate(
       Contrast = recode(
         contrast,
@@ -201,8 +188,24 @@ fit_subtype_vs_td <- function(df) {
     )
 }
 
+## -------- NEW: L vs H (ASD only) --------
+fit_L_vs_H <- function(df) {
+  
+  df_asd <- df %>% filter(Group %in% c("L","H"))
+  
+  if (n_distinct(df_asd$Group) < 2) return(NULL)
+  
+  m <- lm(Embedding ~ Group + AGE_AT_SCAN + site, data = df_asd)
+  em <- emmeans(m, ~ Group)
+  
+  as.data.frame(
+    contrast(em, method = list("L vs H" = c(1, -1)))
+  ) %>%
+    mutate(Contrast = "L vs H")
+}
+
 # ============================================================
-# Run contrasts for all Network × Step
+# Run all contrasts
 # ============================================================
 
 stats <- bind_rows(
@@ -213,7 +216,11 @@ stats <- bind_rows(
   
   data_all %>%
     group_by(Network, Step) %>%
-    group_modify(~ fit_subtype_vs_td(.x))
+    group_modify(~ fit_subtype_vs_td(.x)),
+  
+  data_all %>%
+    group_by(Network, Step) %>%
+    group_modify(~ fit_L_vs_H(.x))
   
 ) %>%
   ungroup() %>%
@@ -221,14 +228,14 @@ stats <- bind_rows(
     sig_raw = p.value < 0.05,
     Contrast = factor(
       Contrast,
-      levels = c("ASD vs TD", "L vs TD", "H vs TD")
+      levels = c("ASD vs TD","L vs TD","H vs TD","L vs H")
     )
   )
 
-write_csv(stats, file.path(out_dir, "sfc_nbwt_group_constrast.csv"))
+write_csv(stats, file.path(out_dir, "sfc_nbwt_group_contrast.csv"))
 
 # ============================================================
-# Prepare data for plotting
+# Plot data
 # ============================================================
 
 plot_data <- stats %>%
@@ -236,64 +243,47 @@ plot_data <- stats %>%
   filter(!is.na(NetworkLabel)) %>%
   mutate(
     Step = factor(Step),
-    NetworkLabel = factor(
-      NetworkLabel,
-      levels = network_map$NetworkLabel
-    )
+    NetworkLabel = factor(NetworkLabel, levels = network_map$NetworkLabel)
   )
 
 # ============================================================
-# Plot: 3-panel heatmap with raw-p significance
+# Plot
 # ============================================================
 
 p <- ggplot(
   plot_data,
-  aes(
-    x = Step,
-    y = NetworkLabel,
-    fill = estimate
-  )
+  aes(x = Step, y = NetworkLabel, fill = estimate)
 ) +
-  geom_tile(
-    color = "white",
-    linewidth = 0.4
-  ) +
+  geom_tile(color = "lightgray", linewidth = 0.4) +
   geom_point(
     data = subset(plot_data, sig_raw),
-    shape  = 21,
-    size   = 2.6,
-    stroke = 1,
-    fill   = NA,
-    color  = "black"
+    shape = 21, size = 2.6, stroke = 1,
+    fill = NA, color = "black"
   ) +
-  facet_wrap(
-    ~ Contrast,
-    nrow = 1
-  ) +
+  facet_wrap(~ Contrast, nrow = 1) +
   scale_fill_gradient2(
     low  = "#3B4CC0",
     mid  = "white",
     high = "#B40426",
-    name = expression(Delta~Embedding)
+    name = expression(Delta~SFEI)
   ) +
-  theme_void(base_size = 18) +
+  labs(x = "SFC步数", y = "功能网络") +
+  theme_bw(base_size = 22) +
   theme(
-    strip.text   = element_text(size = 18, face = "bold"),
-    axis.text.x  = element_text(size = 12),
-    axis.text.y  = element_text(size = 14),
-    legend.position = "right"
+    strip.text   = element_text(size = 32, face = "bold"),
+    axis.text.y  = element_text(size = 30),
+    axis.text.x  = element_text(size = 30),
+    axis.title   = element_text(size = 35),
+    legend.title = element_text(size = 35),
+    legend.text  = element_text(size = 30),
+    panel.grid   = element_blank()
   )
-
-# ============================================================
-# Save figure (transparent background)
-# ============================================================
 
 ggsave(
   filename = file.path(plot_dir, "sfc_nbwt_subtypes_contrasts.png"),
   plot     = p,
-  width    = 3600,
-  height   = 2000,
+  width    = 4000,
+  height   = 2200,
   dpi      = 300,
-  units    = "px",
-  bg       = "transparent"
+  units    = "px"
 )
