@@ -90,6 +90,36 @@ data/abide/timeseries/
 `sum_SFC_nbwt_embedding_ABIDE.m`（不走回头路版）
 
 
+### zSFC 分 subtype × step 群体均值汇总
+`mean_SFC_nbtw_by_subtype_step_ABIDE.m`
+该脚本用于对 ABIDE 数据集中已经计算完成的zSFC结果进行进一步的群体层级汇总分析。对不同 subtype 在每一个嵌入 step 上的 zSFC 矩阵进行被试层面的平均，并输出为可直接用于后续统计建模与可视化分析的 CSV 文件。
+
+## 输入数据说明
+1.1 zSFC 数据 /Volumes/Zuolab_XRF/data/abide/SFCnbtw/
+该目录包含每名被试在不同嵌入 step 上计算得到的 zSFC 矩阵，文件格式为 .mat，命名规则示例如下：
+0029096_DU15_SFC_nbtw_step01.mat
+29097_DU15_SFC_nbtw_step08.mat
+
+每个 .mat 文件中包含变量：zSFC：N × N 的静态功能连接矩阵（z 标准化）
+
+1.2 被试分组信息 /Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_summary.csv
+该 CSV 文件至少包含以下字段：
+- Subject：被试编号（不含前导 0）
+- Subtype：被试所属临床分组或亚型（如 TD、ASD-L、ASD-H）
+
+## 输出结果说明
+3.1 群体平均 zSFC 矩阵（subtype × step）/Volumes/Zuolab_XRF/output/abide/sfc/stat/meanzSFC
+该目录下每一个 CSV 文件对应一个 subtype × step 组合，文件命名规则如下：
+zSFC_mean_TD_step01.csv
+zSFC_mean_ASD_L_step03.csv
+zSFC_mean_ASD_H_step08.csv
+
+每个 CSV 文件内容为：
+- 一个 N × N 的矩阵
+- 表示该 subtype 在对应 step 下的 zSFC 被试均值
+- 行列顺序与原始 zSFC 矩阵保持一致
+
+
 ### 筛选被试数据
 `select_ccnpckg_participant.R`和`select_ccnpckg_participant.R`筛选出meanfd小于0.5的被试数据
 
