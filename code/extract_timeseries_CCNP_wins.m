@@ -1,166 +1,116 @@
-%% ============================================================
-%  Extract DU15 network time series (fsaverage5 surface) - WINDOWS
-%  ROI mask preloaded (IO-safe)
-%  Vertex-wise detrend (NaN-aware)
-%  ROI average -> Bilateral network average
-%% ============================================================
+%% =========================================================
+%  Extract DU15 network time series from fsLR10k CIFTI dtseries
+%  NEW VERSION for CCNPPEK_fslr10k Windows data
+%% =========================================================
 
-clear; clc;
+clc; clear;
 
 %% ---------------- Paths ----------------
-projDir = 'E:\PhDproject\Study3';
-dataDir = fullfile(projDir, 'data');
-roiDir  = fullfile(projDir, 'output', 'ROI_fsaverage5');
-outRoot = fullfile(dataDir, 'timeseries', 'fsaverage5');
+roi_file = 'E:\PhDproject\Study3\output\roi\fslr10k\DU15Net_fsLR10k.dscalar.nii';
+data_dir = 'F:\luo_fslr10k';
+out_dir  = 'E:\PhDproject\Study3\data\timeseries\fslr10k';
 
-sites = {'CKG', 'PEK'};
-runs  = {'rest1', 'rest2'};
-hemi  = {'lh', 'rh'};
-nROI  = 15;
+if ~exist(out_dir, 'dir')
+    mkdir(out_dir);
+end
 
-%% ------------------------------------------------------------
-for s = 1:numel(sites)
+nROI = 15;
 
-    siteName = sites{s};
-    siteDir  = fullfile(dataDir, siteName);
+%% ---------------- Load ROI ----------------
+roi_cifti = ft_read_cifti(roi_file);
+roi_vec   = roi_cifti.dscalar(:);   % [20484 × 1]
 
-    subList = dir(fullfile(siteDir, 'sub-*'));
+assert(numel(roi_vec) == 20484, 'Unexpected ROI size');
 
-    for sub = 1:numel(subList)
+%% =========================================================
+%  Find ALL restXX_Atlas_s4_10k.dtseries.nii recursively
+%% =========================================================
 
-        subName = subList(sub).name;
-        subDir  = fullfile(siteDir, subName);
+files = dir(fullfile(data_dir, '**', 'rest*_Atlas_s4_10k.dtseries.nii'));
 
-        outDir = fullfile(outRoot, siteName, subName);
-        if ~exist(outDir, 'dir')
-            mkdir(outDir);
-        end
+% -------- 排除 gs-removal ----------
+keep_idx = ~contains({files.name}, 'gs-removal');
+files = files(keep_idx);
 
-        %% =====================================================
-        %  PRELOAD ROI MASKS (ONCE PER SUBJECT)
-        %% =====================================================
-        ROI_mask = struct();
-        ROI_mask.lh = cell(nROI,1);
-        ROI_mask.rh = cell(nROI,1);
+fprintf('Total found: %d\n', numel(files));
 
-        for i = 1:nROI
-            for h = 1:numel(hemi)
+%% =========================================================
+for i = 1:numel(files)
 
-                hemiName = hemi{h};
-                roiFile = fullfile(roiDir, ...
-                    sprintf('%s.DU15Net%d_fsaverage5.nii.gz', hemiName, i));
+    func_file = fullfile(files(i).folder, files(i).name);
+    fprintf('Processing: %s\n', func_file);
 
-                assert(exist(roiFile,'file')==2, ...
-                    'ROI file missing: %s', roiFile);
+    %% ---------------- Read CIFTI ----------------
+    func_cifti = ft_read_cifti(func_file);
+    full_data  = func_cifti.dtseries(1:20484, :);  % cortex only
 
-                roi  = niftiread(roiFile);
-                mask = squeeze(roi) > 0;
+    if size(full_data,1) ~= numel(roi_vec)
+        error('Vertex mismatch: %s', files(i).name);
+    end
 
-                assert(any(mask), ...
-                    'Empty ROI: DU15Net%d %s', i, hemiName);
+    nTime = size(full_data, 2);
+    ROI_ts = nan(nROI, nTime);
 
-                ROI_mask.(hemiName){i} = mask;
-            end
-        end
+    %% =====================================================
+    %  Network loop
+    %% =====================================================
+    for r = 1:nROI
 
-        %% =====================================================
-        %  RUN LOOP
-        %% =====================================================
-        for r = 1:numel(runs)
+        mask = (roi_vec == r);
+        assert(any(mask), 'Empty DU15Net%d', r);
 
-            runName = runs{r};
-            fmri = struct();
+        ts = full_data(mask, :);          % [nVertex × nTime]
+        ts_detrend = nan(size(ts));
 
-            %% ---------- Load fMRI ----------
-            for h = 1:numel(hemi)
+        %% ---------- Vertex-wise detrend ----------
+        for v = 1:size(ts,1)
 
-                hemiName = hemi{h};
+            v_ts = ts(v,:);
+            good = ~isnan(v_ts);
 
-                fmriFile = dir(fullfile(subDir, ...
-                    sprintf('%s.pp.*.fsaverage5.%s.nii', runName, hemiName)));
-
-                if isempty(fmriFile)
-                    fprintf('Missing %s %s in %s\n', ...
-                        runName, hemiName, subName);
-                    fmri = [];
-                    break;
-                end
-
-                tmp = niftiread(fullfile( ...
-                    fmriFile(1).folder, fmriFile(1).name));
-
-                fmri.(hemiName) = squeeze(tmp);   % [10242 × T]
-            end
-
-            if isempty(fmri)
+            if sum(good) <= 10
                 continue;
             end
 
-            nTime = size(fmri.lh, 2);
+            v_valid = v_ts(good);
 
-            %% ---------- Allocate ----------
-            ROI_ts = struct();
-            ROI_ts.lh = nan(nROI, nTime);
-            ROI_ts.rh = nan(nROI, nTime);
-
-            %% ---------- ROI loop ----------
-            for i = 1:nROI
-
-                for h = 1:numel(hemi)
-
-                    hemiName = hemi{h};
-                    mask = ROI_mask.(hemiName){i};
-
-                    ts = fmri.(hemiName)(mask, :);   % [nVertex × nTime]
-                    ts_detrend = nan(size(ts));
-
-                    %% ----- Vertex-wise detrend -----
-                    for v = 1:size(ts,1)
-
-                        v_ts = ts(v,:);
-                    
-                        good = ~isnan(v_ts);
-                    
-                        % 至少需要足够多的有效时间点
-                        if sum(good) <= 10
-                            continue;
-                        end
-                    
-                        v_valid = v_ts(good);
-                    
-                        % 手动零方差检查（避免 nanstd）
-                        if max(v_valid) == min(v_valid)
-                            continue;
-                        end
-                    
-                        v_ts_d = v_ts;
-                        v_ts_d(good) = detrend(v_valid, 'linear');
-                        ts_detrend(v,:) = v_ts_d;
-                    
-                    end
-
-                    ROI_ts.(hemiName)(i,:) = nanmean(ts_detrend, 1);
-                end
+            if max(v_valid) == min(v_valid)
+                continue;
             end
 
-            %% ---------- Bilateral network average ----------
-            ROI_ts_bilat = nan(nROI, nTime);
-            for i = 1:nROI
-                ROI_ts_bilat(i,:) = nanmean( ...
-                    [ROI_ts.lh(i,:); ROI_ts.rh(i,:)], 1);
-            end
-
-            %% ---------- Save ----------
-            outFile = fullfile(outDir, ...
-                sprintf('%s_DU15_network_ts.mat', runName));
-
-            save(outFile, ...
-                'ROI_ts', ...
-                'ROI_ts_bilat', ...
-                'runName', 'siteName', 'subName');
-
+            v_ts_d = v_ts;
+            v_ts_d(good) = detrend(v_valid, 'linear');
+            ts_detrend(v,:) = v_ts_d;
         end
+
+        %% ---------- Network average ----------
+        ROI_ts(r,:) = nanmean(ts_detrend, 1);
+
     end
+
+    %% =====================================================
+    %  Parse subject + rest name
+    %% =====================================================
+
+    folder_parts = split(files(i).folder, filesep);
+
+    % 找到被试名（以CCNPPEK开头的文件夹）
+    sub_idx = find(startsWith(folder_parts, 'CCNPPEK'), 1);
+    subName = folder_parts{sub_idx};
+
+    % rest名称
+    restName = files(i).name;
+    restName = extractBefore(restName, '_Atlas');
+
+    %% =====================================================
+    %  Save
+    %% =====================================================
+
+    out_file = fullfile(out_dir, ...
+        [subName '_' restName '_DU15_network_ts.mat']);
+
+    save(out_file, 'ROI_ts', 'subName', 'restName');
+
 end
 
-fprintf('DONE!\n');
+fprintf('================ DONE ================\n');
