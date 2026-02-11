@@ -192,11 +192,9 @@ zSFC_mean_ASD_H_step08.csv
 
 ### SFEI与认知行为的相关分析
 `statistic_SFC_correlations_abide.R`
-本脚本用于分析 ABIDE 数据集中功能连接嵌入值（SFC embedding）与认知及临床行为量表之间的相关关系，并基于机器学习预测的 ASD 亚型结果，将分析分别在 ASD-L（亚型 1）与 ASD-H（亚型 2）男性被试中独立进行。
-该分析整合了多步 SFC 嵌入结果、最终纳入分析的被试列表、站点信息以及认知行为数据。在控制站点效应（SITE_ID）的前提下，分别对嵌入值与行为指标进行残差相关分析，并对多重比较结果进行 FDR 校正。整体分析流程与此前基于脑形态学百分位数（centile）的相关分析保持方法学一致性，便于结果的直接比较与整合。
+本脚本用于分析ABIDE数据集中不同分组/分型的SFEI与认知行为量表之间的相关关系。在控制站点效应的前提下，分别对嵌入值与行为指标进行残差相关分析，整体分析流程与此前基于脑形态学百分位数的相关分析保持方法学一致性
 
 本脚本依赖以下数据文件：
-
 1. **SFC embedding 结果（多步）**  `/Volumes/Zuolab_XRF/output/abide/sfc/sfc_embedding/`
    该目录包含 step01–step08 共 8 个 Excel 文件，每个文件对应一步 SFC 嵌入结果。行表示被试，列表示不同功能网络（Net01–Net15）的 embedding 值。
 
