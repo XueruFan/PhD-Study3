@@ -17,17 +17,16 @@ sapply(packages, require, character.only = TRUE)
 
 sfcDir  <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_nbtw_embedding"
 subjFile <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv"
-phenoFile <- "/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/abide_A_all_240315.csv"
-clusterFile <- "/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv"
+phenoFile <- "/Volumes/Zuolab_XRF/supplement/abide_A_all_240315.csv"
+clusterFile  <- "/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv"
 
 outDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr"
-dir.create(outDir, showWarnings = FALSE, recursive = TRUE)
 plotDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/plot/corr"
 
 ## ==============================
 ## 读取被试列表
 ## ==============================
-subj_list <- read.csv(subjFile, stringsAsFactors = FALSE)
+subj_list <- read.csv(subjFile, header = FALSE, stringsAsFactors = FALSE)
 colnames(subj_list)[1] <- "participant"
 subj_list$participant <- as.character(subj_list$participant)
 
@@ -81,7 +80,7 @@ pheno$SITE_ID <- gsub("CALTECH", "CALT", pheno$SITE_ID)
 ## ==============================
 
 names_cog_p <- c(
-  "FIQ",
+  # "FIQ",
   "ADOS_2_SOCAFFECT", "ADOS_2_TOTAL",
   "ADI_R_SOCIAL_TOTAL_A", "ADI_R_RRB_TOTAL_C",
   "SRS_TOTAL_RAW", "SRS_COGNITION_RAW",
@@ -128,7 +127,7 @@ for (f in files) {
         temp <- dat[, c(b, cog, "SITE_ID")]
         temp <- temp[complete.cases(temp), ]
         
-        if (nrow(temp) < 30) next
+        if (nrow(temp) < 40) next
         
         if (length(unique(temp$SITE_ID)) > 1) {
           y_lm <- lm(temp[[cog]] ~ SITE_ID, data = temp)
@@ -159,7 +158,7 @@ for (f in files) {
         temp <- dat[, c(b, cog, "SITE_ID")]
         temp <- temp[complete.cases(temp), ]
         
-        if (nrow(temp) < 30) next
+        if (nrow(temp) < 40) next
         
         if (length(unique(temp$SITE_ID)) > 1) {
           y_lm <- lm(temp[[cog]] ~ SITE_ID, data = temp)
@@ -263,153 +262,3 @@ write.csv(
   row.names = FALSE
 )
 
-
-## =========================================================
-## 自动生成所有显著 SFC × Behavior 散点图
-## =========================================================
-
-library(ggplot2)
-library(dplyr)
-library(readxl)
-library(stringr)
-
-## ---------------------------------------------------------
-## 选择用于作图的显著性标准
-## ---------------------------------------------------------
-sig_results <- final_results_named %>%
-  filter(p_value < 0.05)   # 或 P_adj < 0.05
-
-## ---------------------------------------------------------
-## 主循环：step × network × behavior
-## ---------------------------------------------------------
-for (i in seq_len(nrow(sig_results))) {
-  
-  step_for_plot <- sig_results$step[i]
-  net_col       <- sig_results$name_brain[i]   # Net01–Net15
-  behavior      <- sig_results$name_cog[i]
-  
-  message(
-    "Plotting: ",
-    step_for_plot, " | ",
-    net_col, " | ",
-    behavior
-  )
-  
-  ## -------------------------------
-  ## 读取对应 step 的 embedding
-  ## -------------------------------
-  sfc_plot <- read_excel(
-    file.path(sfcDir, paste0(step_for_plot, ".xlsx"))
-  )
-  colnames(sfc_plot)[1] <- "participant"
-  sfc_plot$participant <- as.character(as.integer(sfc_plot$participant))
-  
-  ## -------------------------------
-  ## 构建作图数据（最小完备）
-  ## -------------------------------
-  plot_dat <- subj_list %>%
-    left_join(
-      sfc_plot %>% select(participant, all_of(net_col)),
-      by = "participant"
-    ) %>%
-    left_join(
-      pheno %>% select(participant, SITE_ID, all_of(behavior)),
-      by = "participant"
-    ) %>%
-    left_join(
-      cluster %>% select(participant, subtype),
-      by = "participant"
-    ) %>%
-    ## 清洗无效行为值（< 0）
-    mutate(
-      across(all_of(behavior), ~ ifelse(.x < 0, NA, .x))
-    ) %>%
-    drop_na(all_of(c(net_col, behavior))) %>%
-    filter(subtype %in% c("0", "1", "2"))
-  
-  ## 如果样本太少，跳过
-  if (nrow(plot_dat) < 30) next
-  
-  ## -------------------------------
-  ## 计算残差（控制 SITE_ID）
-  ## -------------------------------
-  plot_dat <- plot_dat %>%
-    group_by(subtype) %>%
-    mutate(
-      y_res = residuals(
-        if (length(unique(SITE_ID)) > 1)
-          lm(.data[[behavior]] ~ SITE_ID)
-        else
-          lm(.data[[behavior]] ~ 1)
-      ),
-      x_res = residuals(
-        if (length(unique(SITE_ID)) > 1)
-          lm(.data[[net_col]] ~ SITE_ID)
-        else
-          lm(.data[[net_col]] ~ 1)
-      )
-    ) %>%
-    ungroup()
-  
-  ## -------------------------------
-  ## 作图（非等长回归线）
-  ## -------------------------------
-  p <- ggplot(
-    plot_dat,
-    aes(x = x_res, y = y_res, color = subtype)
-  ) +
-    geom_point(
-      alpha = 0.5,
-      size = 2,
-      position = position_jitter(width = 0.02, height = 1)
-    ) +
-    geom_smooth(
-      method = "lm",
-      se = FALSE,
-      linewidth = 1.2
-    ) +
-    scale_color_manual(
-      values = c(
-        "0" = "grey60",
-        "1" = "#4DAF4A",
-        "2" = "#E41A1C"
-      ),
-      labels = c(
-        "0" = "TD",
-        "1" = "ASD-L",
-        "2" = "ASD-H"
-      ),
-      name = NULL
-    ) +
-    labs(
-      x = paste(net_col, "SFEI (residual)"),
-      y = paste(behavior, "(residual)"),
-      title = paste(step_for_plot, ":", net_col, "×", behavior)
-    ) +
-    theme_classic(base_size = 14) +
-    theme(
-      legend.position = "top",
-      plot.title = element_text(face = "bold", hjust = 0.5),
-      axis.title = element_text(face = "bold")
-    )
-  
-  ## -------------------------------
-  ## 保存图像
-  ## -------------------------------
-  out_name <- paste0(
-    "SFEI_nbwt_",
-    step_for_plot, "_",
-    net_col, "_",
-    behavior,
-    ".png"
-  )
-  
-  ggsave(
-    filename = out_name,
-    plot = p,
-    path = plotDir,
-    width = 6,
-    height = 6,
-    dpi = 300
-  )
-}
