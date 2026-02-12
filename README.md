@@ -1,27 +1,30 @@
-# PhD Study3
+# PhD Study3: SFC分析
 
-## 研究三：SFC分析
+## 数据准备
 
 ### 拷贝需要的静息态数据
-`copy_CCNP_fsaverage5.ps1` 
-`unzip_CCNP.ps1`
+fsaverage5:`copy_CCNP_fsaverage5.ps1`和`unzip_CCNP.ps1`
+fslr10k:
 
 ### 亚型预测
 `predict_clusters_abide.py`使用asd研究中的分类器（）预测abide中剩余男性asd（大于等于13岁）的亚型
 
 ### 被试汇总
-把原来训练的到的分型，和现在预测的到的分型，和典型对照所有人汇总到一起
+把原来训练得到的分型，和现在预测的到的分型，和典型对照所有人汇总到一起
 `sum_predict_all_abide.R`
 /Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv
+
+
+## ROI时间序列提取
 
 ### 每个网络选取1个ROI
 `select_ROI_fsLR32k`
 
 ### 空间转换网络ROI
-将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **FreeSurfer 的 fsaverage5** 表面空间，从而与基于 fsaverage5 预处理的功能数据在**顶点层面实现精确对齐**。
+将定义在 **fsLR-32k** 表面空间中的ROIs，转换到 **FreeSurfer 的 fsaverage5** 表面空间，从而与基于 fsaverage5 预处理的功能数据在**顶点层面实现精确对齐**。
 
 `export_ROI_wb.m`  
-**fsLR-32k ROI → Workbench metric** 该 MATLAB 脚本将以顶点索引形式存储的 ROI（fsLR-32k）导出为二值表面 metric 文件（`.func.gii`），作为后续 Workbench 重采样的输入。
+**fsLR-32k ROI → Workbench metric** 将以顶点索引形式存储的 ROI（fsLR-32k）导出为二值表面 metric 文件（`.func.gii`），作为后续 Workbench 重采样的输入。
 output/ROI_metrics_fsLR32k/
 lh.DU15network<N>_fsLR32k.func.gii
 rh.DU15network<N>_fsLR32k.func.gii
@@ -33,13 +36,13 @@ lh.DU15Net<N>_fsLR10k.func.gii
 rh.DU15Net<N>_fsLR10k.func.gii
 
 `resample_fsLR32k_to_fsaverage164k.sh`  
-**fsLR-32k → fsaverage-164k（Workbench）** 该 shell 脚本使用 Connectome Workbench 将 fsLR-32k ROI metric 重采样至 fsaverage 高分辨率表面（约 164k 顶点/半球）。
+**fsLR-32k → fsaverage-164k（Workbench）** 将 fsLR-32k ROI metric 重采样至 fsaverage 高分辨率表面（约 164k 顶点/半球）。
 output/ROI_metrics_fsaverage164/
 lh.DU15network<N>_fsaverage164k.func.gii
 rh.DU15network<N>_fsaverage164k.func.gii
 
 `resample_fsaverage164_to_fsaverage5.sh`  
-**fsaverage-164k → fsaverage5（FreeSurfer）** 该脚本将 fsaverage-164k 的 ROI metric 转换为 FreeSurfer overlay，并映射到 fsaverage5 表面。
+**fsaverage-164k → fsaverage5（FreeSurfer）** 将 fsaverage-164k 的 ROI metric 转换为 FreeSurfer overlay，并映射到 fsaverage5 表面。
 output/ROI_fsaverage5/
 lh.DU15Net<N>_fsaverage5.mgh
 rh.DU15Net<N>_fsaverage5.mgh
@@ -51,7 +54,6 @@ lh.DU15Net<N>_fsaverage5.nii.gz
 rh.DU15Net<N>_fsaverage5.nii.gz
 
 将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **fsLR-10k**表面空间。
-
 
 ### 可视化ROI
 `plot_Du15ROI_fsaverage5.py`
@@ -69,62 +71,45 @@ rh.DU15Net_fsLR10k.func.gii
 output/ROI_fslr10k/
 DU15Net_fsLR10k.dscalar.nii
 
-
 ### 提取时间序列
-`extract_timeseries_CCNP_mac`、`extract_timeseries_CCNP_wins.m`和`extract_timeseries_ABIDE.mac.m`
 提取数据中ROI体素的时间序列，然后进行逐个时间序列的去均值和去线性漂移，两个半球的ROI内进行体素平均。
-CCNP
-data/timeseries/fsaverage/SITE/SUB/
-rest1_DU15_roi_ts.mat
-rest2_DU15_roi_ts.mat
-ABIDE
+
+**ABIDE** 
+`extract_timeseries_ABIDE.mac.m`
 data/abide/timeseries/
 29096_DU15_network_ts.mat
 
+**CCNP** 
+fsaverage5: `extract_timeseries_CCNP_fsaverage5_mac`和`extract_timeseries_CCNP_fsaverage5_wins.m`
+data/timeseries/fsaverage/SITE/SUB/
+rest1_DU15_roi_ts.mat
+rest2_DU15_roi_ts.mat
 
-### 计算SFC
-`calculate_SFC_ABIDE.m`和`calculate_SFC_CCNP.m`计算SFC、zSFC和embedding
-`calculate_SFC_nbwt_ABIDE.m`（不走回头路版）
-
-`sum_SFC_embedding_ABIDE.m`和`sum_SFC_embedding_CCNP.m`汇总所有被试的embedding值
-`sum_SFC_nbwt_embedding_ABIDE.m`（不走回头路版）
+fslr10k: `extract_timeseries_CCNP.wins.m`
+E:\PhDproject\Study3\data\timeseries\fslr10k
+CCNPPEK0001_01_rest01_DU15_network_ts.mat
 
 
-### zSFC 分 subtype × step 群体均值汇总
+## 计算SFEI
+
+### 计算汇总SFC
+`calculate_SFC_nbwt_ABIDE.m`（不走回头路版）和`calculate_SFC_nbwt_CCNP.m`计算SFC、zSFC和SFEI
+`sum_SFC_nbwt_embedding_ABIDE.m`和`sum_SFC_nbwt_embedding_CCNP.m`汇总所有被试的SFEI
+
+### 筛选CCNP被试数据
+`select_ccnppek_participant.R`（和`select_ccnpckg_participant_fsaverage5.R`）筛选出meanfd小于0.3的被试数据，并对同一个session内的所有通过qc的run取平均
+/Volumes/Zuolab_XRF/output/ccnp/sfc/sfc_nbtw_embedding/pek_step01_fd0.3_sessionAvg.xlsx
+
+### 分subtype × step计算ABIDE的SFEI均值
 `mean_SFC_nbtw_by_subtype_step_ABIDE.m`
-该脚本用于对 ABIDE 数据集中已经计算完成的zSFC结果进行进一步的群体层级汇总分析。对不同 subtype 在每一个嵌入 step 上的 zSFC 矩阵进行被试层面的平均，并输出为可直接用于后续统计建模与可视化分析的 CSV 文件。
-
-## 输入数据说明
-1.1 zSFC 数据 /Volumes/Zuolab_XRF/data/abide/SFCnbtw/
-该目录包含每名被试在不同嵌入 step 上计算得到的 zSFC 矩阵，文件格式为 .mat，命名规则示例如下：
-0029096_DU15_SFC_nbtw_step01.mat
-29097_DU15_SFC_nbtw_step08.mat
-
-每个 .mat 文件中包含变量：zSFC：N × N 的静态功能连接矩阵（z 标准化）
-
-1.2 被试分组信息 /Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_summary.csv
-该 CSV 文件至少包含以下字段：
-- Subject：被试编号（不含前导 0）
-- Subtype：被试所属临床分组或亚型（如 TD、ASD-L、ASD-H）
-
-## 输出结果说明
-3.1 群体平均 zSFC 矩阵（subtype × step）/Volumes/Zuolab_XRF/output/abide/sfc/stat/meanzSFC
-该目录下每一个 CSV 文件对应一个 subtype × step 组合，文件命名规则如下：
+/Volumes/Zuolab_XRF/output/abide/sfc/stat/meanzSFC
 zSFC_mean_TD_step01.csv
 zSFC_mean_ASD_L_step03.csv
 zSFC_mean_ASD_H_step08.csv
 
-每个 CSV 文件内容为：
-- 一个 N × N 的矩阵
-- 表示该 subtype 在对应 step 下的 zSFC 被试均值
-- 行列顺序与原始 zSFC 矩阵保持一致
+## SFEI的组间比较和相关分析
 
-
-### 筛选被试数据
-`select_ccnpckg_participant.R`和`select_ccnpckg_participant.R`筛选出meanfd小于0.5的被试数据
-
-
-### embedding描述性分析
+### SFEI描述性分析
 `group_analysis_SFC_nbwt_embedding_ABIDE.R`
 整合了多步嵌入计算结果、被试人口学信息、站点信息以及基于机器学习的 ASD 亚型预测结果（仅包含男性被试），并生成可直接用于论文排版的高分辨率图像。
 
@@ -280,6 +265,22 @@ zSFC_mean_ASD_H_step08.csv
 所有图像文件统一保存至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc/plot/corr
 
 
+## SFEI的个体偏离分析
+
+### 汇总数据
+`sum_SFEI_for_normative.R` 汇总CCNP中meanfd小于0.3，ccnp和abide中的td 筛选年龄不超过18的男性，数据整合起来用于建模
+/Volumes/Zuolab_XRF/output/normative/SFEI_normative_demographic.xlsx
+
+### 建立SFEI的常模
+
+
+
+
+
+
+
+
+
 
 # 研究四 rDCM分析
 
@@ -308,7 +309,6 @@ rDCM/
 └── PEK/
     └── sub-XXXX_ses01/
         └── sub-XXXX_rest1_rDCM.mat
-
 
 ## Step : 汇总rDCM结果
 `sum_rDCM_ABIDE.m`
