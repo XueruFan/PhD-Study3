@@ -271,6 +271,10 @@ zSFC_mean_ASD_H_step08.csv
 `sum_SFEI_for_normative.R` 汇总CCNP中meanfd小于0.3，ccnp和abide中的td 筛选年龄不超过18的男性，数据整合起来用于建模
 /Volumes/Zuolab_XRF/output/normative/SFEI_normative_demographic.xlsx
 
+### combat去除站点效应
+`combat_SFEI_for_normative.R`
+/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data_combat.xlsx
+
 ### 建立SFEI的常模
 
 
