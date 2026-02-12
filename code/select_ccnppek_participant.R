@@ -6,10 +6,10 @@ library(stringr)
 library(writexl)
 
 # ------------------ paths ------------------
-qc_file   <- "/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/QC/ccnppek_fd0.5.xlsx"
-demo_file <- "/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/ccnppek_participant.xlsx"
+qc_file   <- "/Volumes/Zuolab_XRF/supplement/ccnp/ccnppek_fd0.3.xlsx"
+demo_file <- "/Volumes/Zuolab_XRF/supplement/ccnp/ccnppek_participant.xlsx"
 
-sfc_dir <- "/Users/xuerufan/DCM-Project-PhD-Study3-/output/CCNP/SFC_Embedding"
+sfc_dir <- "/Volumes/Zuolab_XRF/output/ccnp/sfc/sfc_nbwt_embedding"
 
 steps <- sprintf("%02d", 1:8)
 
@@ -56,6 +56,6 @@ for (s in steps) {
   # 3. 输出
   write_xlsx(
     merged,
-    file.path(sfc_dir, paste0("pek_step", s, "_fd0.5.xlsx"))
+    file.path(sfc_dir, paste0("pek_step", s, "_fd0.3.xlsx"))
   )
 }
