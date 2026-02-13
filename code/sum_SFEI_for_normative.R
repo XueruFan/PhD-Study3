@@ -90,7 +90,8 @@ ccnp_clean <- ccnp_embedding %>%
   rename(ID = Participant) %>%
   mutate(
     ID  = as.character(ID),
-    Sex = ifelse(Sex == "男", 1, 2)
+    Sex = ifelse(Sex == "男", 1, 2),
+    Subtype = "TD"
   ) %>%
   filter(
     Sex == 1,
@@ -108,7 +109,6 @@ abide_clean <- abide_embedding %>%
   mutate(ID = as.integer(ID)) %>%
   left_join(abide_demo, by = "ID") %>%
   filter(
-    Subtype == "TD",
     Sex == 1,
     Age <= 18,
     Step >= 1,
@@ -126,7 +126,7 @@ ccnp_long <- ccnp_clean %>%
     values_to = "SFEI"
   ) %>%
   mutate(SFEI = as.numeric(SFEI)) %>%
-  select(Cohort, ID, Site, Age, Step, Network, SFEI)
+  select(Cohort, ID, Session, Subtype, Site, Age, Step, Network, SFEI)
 
 abide_long <- abide_clean %>%
   pivot_longer(
@@ -136,7 +136,9 @@ abide_long <- abide_clean %>%
   ) %>%
   mutate(SFEI = as.numeric(SFEI),
          ID  = as.character(ID),) %>%
-  select(Cohort, ID, Site, Age, Step, Network, SFEI)
+  select(Cohort, ID, Subtype, Site, Age, Step, Network, SFEI)
+
+abide_long$Session <- NA
 
 ############################################################
 # 8. Merge
@@ -151,9 +153,6 @@ normative_data <- bind_rows(ccnp_long, abide_long)
 output_file <- "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data.xlsx"
 
 write.xlsx(normative_data, output_file, overwrite = TRUE)
-
-cat("Finished.\nSaved to:\n", output_file)
-
 
 
 ############################################################
