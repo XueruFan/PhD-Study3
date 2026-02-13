@@ -272,11 +272,12 @@ zSFC_mean_ASD_H_step08.csv
 /Volumes/Zuolab_XRF/output/normative/SFEI_normative_demographic.xlsx
 
 ### combat去除站点效应
-`combat_SFEI_for_normative.R`
+`combat_SFEI_for_combat.R` ABIDE（ASD、TD）和CCNP一起combat
 /Volumes/Zuolab_XRF/output/normative/SFEI_normative_data_combat.xlsx
 
 ### 建立SFEI的常模
-
+`statistic_FD_correlations_ccnp.R`分析fd和SFEI是否相关
+/Volumes/Zuolab_XRF/output/normative/SFEI_fd_correlation.xlsx
 
 
 
