@@ -276,10 +276,10 @@ zSFC_mean_ASD_H_step08.csv
 /Volumes/Zuolab_XRF/output/normative/SFEI_normative_data_combat.xlsx
 
 ### 建立SFEI的常模
-`statistic_FD_correlations_ccnp.R`分析fd和SFEI是否相关
+`statistic_FD_correlations_ccnp.R`分析fd和SFEI是否相关，结果是不相关
 /Volumes/Zuolab_XRF/output/normative/SFEI_fd_correlation.xlsx
 
-
+`gamlss_SFEI_ccnp.R` 建模
 
 
 
