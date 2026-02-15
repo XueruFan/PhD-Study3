@@ -279,7 +279,7 @@ zSFC_mean_ASD_H_step08.csv
 `statistic_FD_correlations_ccnp.R`分析fd和SFEI是否相关，结果是不相关
 /Volumes/Zuolab_XRF/output/normative/SFEI_fd_correlation.xlsx
 
-`gamlss_SFEI_ccnp.R` 建模
+`gamlss_SFEI_ccnp.R` 用CCNP和ABIDE中的TD一起建模GAMLSS
 
 
 
