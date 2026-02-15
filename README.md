@@ -287,7 +287,8 @@ zSFC_mean_ASD_H_step08.csv
 `z_analysis_SFEI_step_ABIDE.R`
 `z_analysis_SFEI_network_ABIDE.R`
 
-
+### centile和认知行为的相关
+`statistic_SFC_centile_correlations_abide.R`
 
 
 
