@@ -19,6 +19,7 @@ fslr10k:数据来自c罗
 ### 每个网络选取1个ROI
 `select_ROI_fsLR32k.m`
 /Users/xuerufan/Downloads/PhD论文材料【师大电脑没有备份】/研究三/ROI/fslr32k/DU15NET_connected_core_ROI_visual.dlabel.nii
+/Users/xuerufan/PhD-Study3/output/DU15NET_connected_core_ROI_report.csv
 
 ### 空间转换网络ROI
 将定义在 **fsLR-32k** 表面空间中的ROIs，转换到 **FreeSurfer 的 fsaverage5** 表面空间，从而与基于 fsaverage5 预处理的功能数据在**顶点层面实现精确对齐**。
