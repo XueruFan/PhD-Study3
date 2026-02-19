@@ -283,7 +283,6 @@ zSFC_mean_ASD_H_step08.csv
 `centile_ASD_SFEI.R`计算 ASD的centile
 
 ### 分析ASD整体及亚型的z偏离与网络组织模式
-`z_analysis_SFEI_step_ABIDE.R`
 `z_analysis_SFEI_network_ABIDE.R`
 
 ### centile和认知行为的相关
