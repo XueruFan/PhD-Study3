@@ -1,5 +1,5 @@
 ############################################################
-# Step × Network Centile × Cognition Correlation
+# Step × Network z_score × Cognition Correlation
 # Stratified by Subtype (L / H)
 # GLOBAL FDR correction
 ############################################################
@@ -16,20 +16,20 @@ sapply(packages, require, character.only = TRUE)
 # 路径
 ############################################################
 
-centileFile <- "/Volumes/Zuolab_XRF/output/normative/gamlss_step1to5/ASD_centile_results.xlsx"
+z_scoreFile <- "/Volumes/Zuolab_XRF/output/normative/gamlss_step1to5/ASD_centile_results.xlsx"
 phenoFile   <- "/Volumes/Zuolab_XRF/supplement/abide/abide_A_all_240315.csv"
 clusterFile <- "/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv"
 
-outDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr_centile"
+outDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr_z"
 dir.create(outDir, showWarnings = FALSE)
 
 ############################################################
-# 读取 centile 数据
+# 读取 z_score 数据
 ############################################################
 
-centile_data <- read_excel(centileFile)
+z_score_data <- read_excel(z_scoreFile)
 
-centile_data <- centile_data %>%
+z_score_data <- z_score_data %>%
   mutate(
     participant = as.character(ID),
     Step = paste0("step", sprintf("%02d", as.numeric(Step))),
@@ -74,7 +74,7 @@ names_cog_s <- c("ADOS_2_RRB")
 # 合并数据
 ############################################################
 
-data_all <- centile_data %>%
+data_all <- z_score_data %>%
   left_join(cluster, by = "participant") %>%
   left_join(pheno, by = "participant")
 
@@ -91,6 +91,9 @@ networks <- unique(data_all$Network)
 
 for (st in steps) {
   for (net in networks) {
+    # st <- "step02"
+    # net <- "Net01"
+    # cl <- "2"
     
     sub_brain <- data_all %>%
       filter(Step == st, Network == net)
@@ -103,17 +106,17 @@ for (st in steps) {
       ## ---------- Spearman ----------
       for (cog in names_cog_s) {
         
-        temp <- dat[, c("centile", cog, "SITE_ID")]
+        temp <- dat[, c("z_score", cog, "SITE_ID")]
         temp <- temp[complete.cases(temp), ]
         if (nrow(temp) < 40) next
         
         # 控制站点
         if (length(unique(temp$SITE_ID)) > 1) {
           y_lm <- lm(temp[[cog]] ~ SITE_ID, data = temp)
-          x_lm <- lm(temp$centile ~ SITE_ID, data = temp)
+          x_lm <- lm(temp$z_score ~ SITE_ID, data = temp)
         } else {
           y_lm <- lm(temp[[cog]] ~ 1, data = temp)
-          x_lm <- lm(temp$centile ~ 1, data = temp)
+          x_lm <- lm(temp$z_score ~ 1, data = temp)
         }
         
         cor_test <- cor.test(residuals(x_lm),
@@ -135,16 +138,16 @@ for (st in steps) {
       ## ---------- Pearson ----------
       for (cog in names_cog_p) {
         
-        temp <- dat[, c("centile", cog, "SITE_ID")]
+        temp <- dat[, c("z_score", cog, "SITE_ID")]
         temp <- temp[complete.cases(temp), ]
         if (nrow(temp) < 40) next
         
         if (length(unique(temp$SITE_ID)) > 1) {
           y_lm <- lm(temp[[cog]] ~ SITE_ID, data = temp)
-          x_lm <- lm(temp$centile ~ SITE_ID, data = temp)
+          x_lm <- lm(temp$z_score ~ SITE_ID, data = temp)
         } else {
           y_lm <- lm(temp[[cog]] ~ 1, data = temp)
-          x_lm <- lm(temp$centile ~ 1, data = temp)
+          x_lm <- lm(temp$z_score ~ 1, data = temp)
         }
         
         cor_test <- cor.test(residuals(x_lm),
@@ -167,14 +170,15 @@ for (st in steps) {
 }
 
 ############################################################
-# 合并结果 + 全局 FDR
+# 合并结果 + FDR
 ############################################################
 
 final_results <- bind_rows(all_results)
 
-# 全局 FDR（所有相关统一校正）
-final_results$P_adj_global <- p.adjust(final_results$p_value,
-                                       method = "fdr")
+final_results <- final_results %>%
+  group_by(cluster, step) %>%
+  mutate(P_adj_subtype_step = p.adjust(p_value, method = "fdr")) %>%
+  ungroup()
 
 ############################################################
 # 保存完整结果
@@ -182,7 +186,7 @@ final_results$P_adj_global <- p.adjust(final_results$p_value,
 
 write.csv(
   final_results,
-  file.path(outDir, "Centile_step_network_cognition_LH.csv"),
+  file.path(outDir, "z_score_correlation_LH.csv"),
   row.names = FALSE
 )
 
@@ -196,8 +200,8 @@ final_sig <- final_results %>%
 
 write.csv(
   final_sig,
-  file.path(outDir, "Centile_step_network_cognition_LH_significant.csv"),
+  file.path(outDir, "z_score_correlation_LH_significant.csv"),
   row.names = FALSE
 )
 
-cat("Centile × Cognition correlation (GLOBAL FDR) finished.\n")
+cat("z_score × Cognition correlation (GLOBAL FDR) finished.\n")
