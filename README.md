@@ -7,7 +7,8 @@ fsaverage5:`copy_CCNP_fsaverage5.ps1`和`unzip_CCNP.ps1`
 fslr10k:数据来自c罗
 
 ### 亚型预测
-`predict_clusters_abide.py`使用asd研究中的分类器（）预测abide中剩余男性asd（大于等于13岁）的亚型
+`predict_clusters_abide.py`使用asd研究中的分类器预测abide中剩余男性asd（大于等于13岁）的亚型
+/Volumes/Zuolab_XRF/output/abide/abide_cluster_predictions_male.csv
 
 ### 被试汇总
 把原来训练得到的分型，和现在预测的分型，和典型对照所有人汇总到一起
@@ -92,12 +93,12 @@ CCNPPEK0001_01_rest01_DU15_network_ts.mat
 ## 计算SFEI
 
 ### 计算汇总SFC
-`calculate_SFC_nbwt_ABIDE.m`（不走回头路版）和`calculate_SFC_nbwt_CCNP.m`计算SFC、zSFC和SFEI
-`sum_SFC_nbwt_embedding_ABIDE.m`和`sum_SFC_nbwt_embedding_CCNP.m`汇总所有被试的SFEI
+`calculate_zSFEI_ABIDE.m`（不走回头路版）和`calculate_zSFEI_CCNP.m`计算SFC、SFEI和zSFEI
+`sum_zSFEI_ABIDE.m`和`sum_zSFEI_CCNP.m`汇总所有被试的SFEI
 
 ### 筛选CCNP被试数据
 `select_ccnppek_participant.R`（和`select_ccnpckg_participant_fsaverage5.R`）筛选出meanfd小于0.3的被试数据，并对同一个session内的所有通过qc的run取平均
-/Volumes/Zuolab_XRF/output/ccnp/sfc/sfc_nbtw_embedding/pek_step01_fd0.3_sessionAvg.xlsx
+/Volumes/Zuolab_XRF/output/ccnp/sfc/zsfei/pek_step01_fd0.3_sessionAvg.xlsx
 
 ### ？？？分subtype × step计算ABIDE的SFEI均值
 `mean_SFC_nbtw_by_subtype_step_ABIDE.m`
@@ -108,41 +109,17 @@ zSFC_mean_ASD_H_step08.csv
 
 ## SFEI的组间比较和相关分析
 
-### SFEI描述性分析
-`group_analysis_SFC_nbwt_embedding_ABIDE.R`
-整合了多步嵌入计算结果、被试人口学信息、站点信息以及基于机器学习的 ASD 亚型预测结果（仅包含男性被试），并生成可直接用于论文排版的高分辨率图像。
+### zSFEI描述性分析
+`group_analysis_zSFEI_ABIDE.R`
+生成最终纳入分析271人asd的被试编号文件/Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_id.csv
+人口信息文件/Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_demo.csv
+年龄人数的分站点统计/Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_summary.csv
+功能网络层面的zSFEI描述统计 Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_network.csv
+连接步数层面的zSFEI描述统计  /Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_step.csv
 
-所有分析结果统一输出至以下目录：/Volumes/Zuolab_XRF/output/abide/sfc
-
-其中，表格结果与图像结果分别存放如下。
-
-生成最终纳入分析的被试编号文件/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv
-
-以及在最后的最后，生成了纳入分析被试的汇总信息，包含编号、站点、分型、年龄。  地址在/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_summary.csv
-
-1. 人口学描述统计（按亚型）  
-   文件名：  
-   sfc_demo.csv  
-
-   内容说明：  
-   各亚型被试的样本量、平均年龄及年龄标准差。
-
-2. 功能网络层面的嵌入描述统计  
-   文件名：  
-   sfc_network.csv  
-
-   内容说明：  
-   不同亚型在各功能网络上的 embedding 均值、标准差、中位数及四分位距。
-
-3. 嵌入步骤层面的描述统计  
-   文件名：  
-   sfc_step.csv  
-
-   内容说明：  
-   不同亚型在各嵌入步骤上的 embedding 均值与标准差。
-
-所有图像文件统一保存在以下子目录：/Volumes/Zuolab_XRF/output/abide/sfc/plot
-当前版本生成的主要图像为：sfc_heatmap_abide.png 功能网络 × 嵌入步骤的平均 embedding 热图   
+/Volumes/Zuolab_XRF/output/abide/sfc/plot/zSFEI_network_abide.png
+/Volumes/Zuolab_XRF/output/abide/sfc/plot/zSFEI_network_step_abide.png
+/Volumes/Zuolab_XRF/output/abide/sfc/plot/zSFEI_heatmap_abide.png
 
 
 ### SFEI组间对比分析
