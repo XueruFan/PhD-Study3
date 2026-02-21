@@ -33,7 +33,7 @@ df <- df %>%
     Step = as.numeric(Step),
     Network = factor(Network),
     Subtype = factor(Subtype),
-    abs_z = abs(z_score)
+    # abs_z = abs(z_score) %  原始z值进行建模
   )
 
 ############################################################
@@ -41,17 +41,15 @@ df <- df %>%
 ############################################################
 
 model_net <- lmer(
-  abs_z ~ Network + (1|ID),
-  data = df,
-  REML = FALSE
+  z_score ~ Network + (1|ID),
+  data = df
 )
 
 # 保存summary
 capture.output(summary(model_net),
                file = file.path(output_dir, "01_model_network_summary.txt"))
 
-# Type III 主效应检验
-anova_net <- Anova(model_net, type = 3)
+anova_net <- anova(model_net)
 
 capture.output(anova_net,
                file = file.path(output_dir, "02_network_main_effect_ANOVA.txt"))
@@ -67,15 +65,14 @@ write.xlsx(as.data.frame(emm_net),
 ############################################################
 
 model_net_sub <- lmer(
-  abs_z ~ Subtype * Network + (1|ID),
-  data = df,
-  REML = FALSE
+  z_score ~ Subtype * Network + (1|ID),
+  data = df
 )
 
 capture.output(summary(model_net_sub),
                file = file.path(output_dir, "04_model_subtype_network_summary.txt"))
 
-anova_net_sub <- Anova(model_net_sub, type = 3)
+anova_net_sub <- anova(model_net_sub)
 
 capture.output(anova_net_sub,
                file = file.path(output_dir, "05_subtype_network_ANOVA.txt"))
@@ -92,15 +89,14 @@ write.xlsx(as.data.frame(emm_sub_net),
 ############################################################
 
 model_full <- lmer(
-  abs_z ~ Step * Subtype * Network + (1|ID),
-  data = df,
-  REML = FALSE
+  z_score ~ Step * Subtype * Network + (1|ID),
+  data = df
 )
 
 capture.output(summary(model_full),
                file = file.path(output_dir, "07_full_model_summary.txt"))
 
-anova_full <- Anova(model_full, type = 3)
+anova_full <- anova(model_full)
 
 capture.output(anova_full,
                file = file.path(output_dir, "08_full_model_ANOVA.txt"))
@@ -116,16 +112,15 @@ for (net in network_list) {
   sub_df <- df %>% filter(Network == net)
   
   model_single <- lmer(
-    abs_z ~ Step * Subtype + (1|ID),
-    data = sub_df,
-    REML = FALSE
+    z_score ~ Step * Subtype + (1|ID),
+    data = sub_df
   )
   
   capture.output(summary(model_single),
                  file = file.path(output_dir,
                                   paste0("09_", net, "_model_summary.txt")))
   
-  anova_single <- Anova(model_single, type = 3)
+  anova_single <- anova(model_single)
   
   capture.output(anova_single,
                  file = file.path(output_dir,
@@ -138,7 +133,7 @@ for (net in network_list) {
 
 p_net <- ggplot(df,
                 aes(x = Network,
-                    y = abs_z,
+                    y = z_score,
                     fill = Subtype)) +
   stat_summary(fun = mean,
                geom = "bar",
@@ -150,7 +145,7 @@ p_net <- ggplot(df,
   theme_minimal(base_size = 14) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(
-    y = "Mean |z|",
+    y = "z",
     x = "Functional Network"
   )
 
@@ -166,14 +161,14 @@ ggsave(file.path(output_dir, "11_network_difference_plot.png"),
 
 p_net_step <- ggplot(df,
                      aes(x = Step,
-                         y = abs_z,
+                         y = z_score,
                          color = Subtype)) +
   stat_summary(fun = mean,
                geom = "line") +
   facet_wrap(~Network) +
   theme_minimal(base_size = 12) +
   labs(
-    y = "Mean |z|",
+    y = "z",
     x = "Step"
   )
 
