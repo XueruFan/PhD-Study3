@@ -6,12 +6,12 @@ library(stringr)
 library(writexl)
 
 # ------------------ paths ------------------
-qc_file   <- "/Volumes/Zuolab_XRF/supplement/ccnp/ccnppek_fd0.3.xlsx"
+qc_file   <- "/Volumes/Zuolab_XRF/supplement/ccnp/ccnppek_fdmean0.3.xlsx"
 demo_file <- "/Volumes/Zuolab_XRF/supplement/ccnp/ccnppek_participant.xlsx"
 
-sfc_dir <- "/Volumes/Zuolab_XRF/output/ccnp/sfc/sfc_nbtw_embedding"
+sfc_dir <- "/Volumes/Zuolab_XRF/output/ccnp/sfc/zsfei"
 
-steps <- sprintf("%02d", 1:8)
+steps <- sprintf("%02d", 1:6)
 
 # ------------------ PEK QC table (run-level) ------------------
 qc <- read_xlsx(qc_file) %>%
