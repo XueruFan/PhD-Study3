@@ -15,17 +15,17 @@ import joblib
 # =========================================================
 
 model_file = (
-    "/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/"
+    "/Users/xuerufan/PhD-Study3/supplement/"
     "trained_svm_model.pkl"
 )
 
 data_file = (
-    "/Users/xuerufan/DCM-Project-PhD-Study3-/supplement/"
+    "/Users/xuerufan/PhD-Study3/supplement/"
     "abide_All_centile_240315.csv"
 )
 
 output_file = (
-    "/Users/xuerufan/DCM-Project-PhD-Study3-/output/"
+    "/Users/xuerufan/PhD-Study3/output/"
     "abide_cluster_predictions_male.csv"
 )
 
