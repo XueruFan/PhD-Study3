@@ -4,21 +4,22 @@
 
 ### 拷贝需要的静息态数据
 fsaverage5:`copy_CCNP_fsaverage5.ps1`和`unzip_CCNP.ps1`
-fslr10k:
+fslr10k:数据来自c罗
 
 ### 亚型预测
 `predict_clusters_abide.py`使用asd研究中的分类器（）预测abide中剩余男性asd（大于等于13岁）的亚型
 
 ### 被试汇总
-把原来训练得到的分型，和现在预测的到的分型，和典型对照所有人汇总到一起
+把原来训练得到的分型，和现在预测的分型，和典型对照所有人汇总到一起
 `sum_predict_all_abide.R`
 /Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv
-
 
 ## ROI时间序列提取
 
 ### 每个网络选取1个ROI
-`select_ROI_fsLR32k`
+`select_ROI_fsLR32k.m`
+/Users/xuerufan/Downloads/PhD论文材料【师大电脑没有备份】/研究三/ROI/fslr32k/DU15NET_connected_core_ROI_visual.dlabel.nii
+/Users/xuerufan/PhD-Study3/output/DU15NET_connected_core_ROI_report.csv
 
 ### 空间转换网络ROI
 将定义在 **fsLR-32k** 表面空间中的ROIs，转换到 **FreeSurfer 的 fsaverage5** 表面空间，从而与基于 fsaverage5 预处理的功能数据在**顶点层面实现精确对齐**。
@@ -29,7 +30,7 @@ output/ROI_metrics_fsLR32k/
 lh.DU15network<N>_fsLR32k.func.gii
 rh.DU15network<N>_fsLR32k.func.gii
 
-`resample_fsLR32k_to_fsLR10k.sh`
+`resample_fsLR32k_to_fsLR10k.sh` 将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **fsLR-10k**表面空间。
 **fsLR-32k → fsLR-10k（Workbench）**
 output/ROI_fslr10k/
 lh.DU15Net<N>_fsLR10k.func.gii
@@ -52,8 +53,6 @@ rh.DU15Net<N>_fsaverage5.mgh
 output/ROI_fsaverage5/
 lh.DU15Net<N>_fsaverage5.nii.gz
 rh.DU15Net<N>_fsaverage5.nii.gz
-
-将定义在 **fsLR-32k** 表面空间中的感兴趣区（regions of interest, ROIs），转换到 **fsLR-10k**表面空间。
 
 ### 可视化ROI
 `plot_Du15ROI_fsaverage5.py`
@@ -100,7 +99,7 @@ CCNPPEK0001_01_rest01_DU15_network_ts.mat
 `select_ccnppek_participant.R`（和`select_ccnpckg_participant_fsaverage5.R`）筛选出meanfd小于0.3的被试数据，并对同一个session内的所有通过qc的run取平均
 /Volumes/Zuolab_XRF/output/ccnp/sfc/sfc_nbtw_embedding/pek_step01_fd0.3_sessionAvg.xlsx
 
-### 分subtype × step计算ABIDE的SFEI均值
+### ？？？分subtype × step计算ABIDE的SFEI均值
 `mean_SFC_nbtw_by_subtype_step_ABIDE.m`
 /Volumes/Zuolab_XRF/output/abide/sfc/stat/meanzSFC
 zSFC_mean_TD_step01.csv
@@ -284,10 +283,10 @@ zSFC_mean_ASD_H_step08.csv
 `centile_ASD_SFEI.R`计算 ASD的centile
 
 ### 分析ASD整体及亚型的z偏离与网络组织模式
-`z_analysis_SFEI_step_ABIDE.R`
 `z_analysis_SFEI_network_ABIDE.R`
 
-
+### centile和认知行为的相关
+`statistic_SFC_centile_correlations_abide.R`
 
 
 
