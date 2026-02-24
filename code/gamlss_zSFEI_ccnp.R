@@ -37,11 +37,11 @@ plot_trajectory_png <- function(fit, df, out_file){
       res = 300)
   
   plot(df$Age,
-       df$SFEI_scaled,
+       df$zSFEI_scaled,
        pch = 16,
        col = rgb(0,0,0,0.3),
-       xlab = "Age",
-       ylab = "SFEI (scaled)")
+       xlab = "年龄",
+       ylab = "zSFEI")
   
   lines(age_seq, pred$mu, lwd = 3)
   lines(age_seq, pred$mu + pred$sigma, lty = 2)
@@ -56,7 +56,7 @@ plot_trajectory_png <- function(fit, df, out_file){
 # Directory structure
 ############################################################
 
-root_dir <- "/Volumes/Zuolab_XRF/output/normative/gamlss_step1to5"
+root_dir <- "/Volumes/Zuolab_XRF/output/normative/gamlss"
 
 dir.create(root_dir, showWarnings = FALSE)
 dir.create(file.path(root_dir, "models"), showWarnings = FALSE)
@@ -67,9 +67,7 @@ dir.create(file.path(root_dir, "diagnostics"), showWarnings = FALSE)
 # Load data
 ############################################################
 
-data <- read_excel(
-  "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data_combat.xlsx"
-)
+data <- read_excel("/Volumes/Zuolab_XRF/output/normative/zSFEI_normative_data_combat.xlsx")
 
 ############################################################
 # Preprocess
@@ -80,16 +78,16 @@ data <- data %>%
     Age = as.numeric(Age),
     Step = as.numeric(as.character(Step)),   # 转 numeric 方便筛选
     Network = as.factor(Network),
-    SFEI_ComBat = as.numeric(SFEI_ComBat)
+    zSFEI_ComBat = as.numeric(zSFEI_ComBat)
   ) %>%
-  select(-Session) %>%   # 删除 Session
+  dplyr::select(-Session) %>%   # 删除 Session
   filter(
     Diagnosis == "TD",
-    Step <= 5            # 只保留 Step 1–5
+    Step <= 5
   ) %>%
   mutate(
     Step = as.factor(Step),        # 再转回 factor
-    SFEI_scaled = SFEI_ComBat * 1000
+    zSFEI_scaled = zSFEI_ComBat * 100
   )
 
 ############################################################
@@ -120,7 +118,7 @@ for (s in steps) {
     fit <- tryCatch({
       
       gamlss(
-        SFEI_scaled ~ pb(Age),
+        zSFEI_scaled ~ pb(Age),
         sigma.formula = ~ pb(Age),
         family = NO,             # 固定 NO
         data = sub_data,
@@ -215,4 +213,4 @@ write.csv(
   row.names = FALSE
 )
 
-cat("Normative modeling (Step 1–5) completed successfully.\n")
+cat("Normative modeling completed successfully.\n")

@@ -271,7 +271,6 @@ network_map <- tibble(
     "Net06",
     "Net02", 
     "Net07", "Net12",
-
     "Net10", "Net11",
     "Net03", "Net15", 
     "Net09"
@@ -284,7 +283,6 @@ network_map <- tibble(
     "PM-PPr",
     "AN",
     "dATN-B", "dATN-A",
-
     "FPN-B", "FPN-A",
     "DN-B", "DN-A",
     "LANG"

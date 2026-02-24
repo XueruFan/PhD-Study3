@@ -17,8 +17,8 @@ library(ggplot2)
 # 路径
 ############################################################
 
-data_path  <- "/Volumes/Zuolab_XRF/output/normative/gamlss_step1to5/ASD_centile_results.xlsx"
-output_dir <- "/Volumes/Zuolab_XRF/output/normative/network_stat"
+data_path  <- "/Volumes/Zuolab_XRF/output/normative/centile/ASD_centile_results.xlsx"
+output_dir <- "/Volumes/Zuolab_XRF/output/normative/centile/network_stat"
 
 dir.create(output_dir, showWarnings = FALSE)
 

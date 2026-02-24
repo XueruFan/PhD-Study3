@@ -37,7 +37,7 @@ fd_session <- fd_data %>%
 # 2. Read SFEI data
 ############################
 
-sfei_path <- "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data.xlsx"
+sfei_path <- "/Volumes/Zuolab_XRF/output/normative/zSFEI_normative_data.xlsx"
 
 sfei_data <- read_excel(sfei_path)
 
@@ -59,9 +59,9 @@ cat("Missing fd_mean:", sum(is.na(merged_data$fd_mean)), "\n")
 cor_results <- merged_data %>%
   group_by(Step, Network) %>%
   summarise(
-    n = sum(!is.na(fd_mean) & !is.na(SFEI)),
-    cor = cor(SFEI, fd_mean, use = "complete.obs", method = "pearson"),
-    p = cor.test(SFEI, fd_mean, method = "pearson")$p.value,
+    n = sum(!is.na(fd_mean) & !is.na(zSFEI)),
+    cor = cor(zSFEI, fd_mean, use = "complete.obs", method = "pearson"),
+    p = cor.test(zSFEI, fd_mean, method = "pearson")$p.value,
     .groups = "drop"
   )
 
@@ -80,7 +80,7 @@ cor_results <- cor_results %>%
 
 write.xlsx(
   cor_results,
-  "/Volumes/Zuolab_XRF/output/normative/SFEI_fd_correlation.xlsx",
+  "/Volumes/Zuolab_XRF/output/normative/zSFEI_fd_correlation.xlsx",
   overwrite = TRUE
 )
 

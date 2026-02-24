@@ -1,7 +1,3 @@
-############################################################
-# Build Male TD Normative Dataset (with Site)
-############################################################
-
 rm(list = ls())
 
 library(tidyverse)
@@ -12,10 +8,10 @@ library(openxlsx)
 # 1. Paths
 ############################################################
 
-ccnp_path  <- "/Volumes/Zuolab_XRF/output/ccnp/sfc/sfc_nbtw_embedding"
-abide_path <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_nbtw_embedding"
+ccnp_path  <- "/Volumes/Zuolab_XRF/output/ccnp/sfc/zsfei"
+abide_path <- "/Volumes/Zuolab_XRF/output/abide/sfc/zsfei"
 
-abide_demo_path <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_summary.csv"
+abide_demo_path <- "/Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_demo.csv"
 
 ############################################################
 # 2. Read CCNP (sessionAvg files only)
@@ -123,20 +119,20 @@ ccnp_long <- ccnp_clean %>%
   pivot_longer(
     cols = starts_with("Net"),
     names_to = "Network",
-    values_to = "SFEI"
+    values_to = "zSFEI"
   ) %>%
-  mutate(SFEI = as.numeric(SFEI)) %>%
-  select(Cohort, ID, Session, Subtype, Site, Age, Step, Network, SFEI)
+  mutate(zSFEI = as.numeric(zSFEI)) %>%
+  select(Cohort, ID, Session, Subtype, Site, Age, Step, Network, zSFEI)
 
 abide_long <- abide_clean %>%
   pivot_longer(
     cols = starts_with("Net"),
     names_to = "Network",
-    values_to = "SFEI"
+    values_to = "zSFEI"
   ) %>%
-  mutate(SFEI = as.numeric(SFEI),
+  mutate(zSFEI = as.numeric(zSFEI),
          ID  = as.character(ID),) %>%
-  select(Cohort, ID, Subtype, Site, Age, Step, Network, SFEI)
+  select(Cohort, ID, Subtype, Site, Age, Step, Network, zSFEI)
 
 abide_long$Session <- NA
 
@@ -150,7 +146,7 @@ normative_data <- bind_rows(ccnp_long, abide_long)
 # 9. Save
 ############################################################
 
-output_file <- "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data.xlsx"
+output_file <- "/Volumes/Zuolab_XRF/output/normative/zSFEI_normative_data.xlsx"
 
 write.xlsx(normative_data, output_file, overwrite = TRUE)
 
@@ -230,15 +226,15 @@ subj_site <- subj_level %>%
 # 3. Save to Excel (multiple sheets)
 ############################################################
 
-demo_output_file <- "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_demographic.xlsx"
+demo_output_file <- "/Volumes/Zuolab_XRF/output/normative/zSFEI_normative_demo.xlsx"
 
 wb <- createWorkbook()
 
-addWorksheet(wb, "Observation_Cohort")
-writeData(wb, "Observation_Cohort", obs_cohort)
+addWorksheet(wb, "Cohort")
+writeData(wb, "Cohort", obs_cohort)
 
-addWorksheet(wb, "Observation_Site")
-writeData(wb, "Observation_Site", obs_site)
+addWorksheet(wb, "Site")
+writeData(wb, "Site", obs_site)
 
 addWorksheet(wb, "Subject_Cohort")
 writeData(wb, "Subject_Cohort", subj_cohort)

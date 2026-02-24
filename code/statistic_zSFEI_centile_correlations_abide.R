@@ -16,11 +16,11 @@ sapply(packages, require, character.only = TRUE)
 # 路径
 ############################################################
 
-z_scoreFile <- "/Volumes/Zuolab_XRF/output/normative/gamlss_step1to5/ASD_centile_results.xlsx"
+z_scoreFile <- "/Volumes/Zuolab_XRF/output/normative/centile/ASD_centile_results.xlsx"
 phenoFile   <- "/Volumes/Zuolab_XRF/supplement/abide/abide_A_all_240315.csv"
 clusterFile <- "/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv"
 
-outDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr_z"
+outDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr"
 dir.create(outDir, showWarnings = FALSE)
 
 ############################################################
@@ -35,14 +35,6 @@ z_score_data <- z_score_data %>%
     Step = paste0("step", sprintf("%02d", as.numeric(Step))),
     Network = as.character(Network)
   )
-
-############################################################
-# 读取亚型
-############################################################
-
-cluster <- read.csv(clusterFile, stringsAsFactors = FALSE)
-cluster$participant <- as.character(cluster$participant)
-cluster$subtype <- as.factor(cluster$subtype)
 
 ############################################################
 # 读取行为数据
@@ -75,10 +67,10 @@ names_cog_s <- c("ADOS_2_RRB")
 ############################################################
 
 data_all <- z_score_data %>%
-  left_join(cluster, by = "participant") %>%
   left_join(pheno, by = "participant")
 
-data_all$SITE_ID <- as.factor(data_all$SITE_ID)
+data_all$Site <- as.factor(data_all$Site)
+data_all$Subtype <- factor(data_all$Subtype)
 
 ############################################################
 # 主循环
@@ -93,27 +85,27 @@ for (st in steps) {
   for (net in networks) {
     # st <- "step02"
     # net <- "Net01"
-    # cl <- "2"
-    
+    # cl <- "ASD-H"
+    # cog <- "ADOS_2_RRB"
     sub_brain <- data_all %>%
       filter(Step == st, Network == net)
     
-    for (cl in levels(data_all$subtype)) {
+    for (cl in levels(data_all$Subtype)) {
       
       dat <- sub_brain %>%
-        filter(subtype == cl)
+        filter(Subtype == cl)
       
       ## ---------- Spearman ----------
       for (cog in names_cog_s) {
         
-        temp <- dat[, c("z_score", cog, "SITE_ID")]
+        temp <- dat[, c("z_score", cog, "Site")]
         temp <- temp[complete.cases(temp), ]
         if (nrow(temp) < 40) next
         
         # 控制站点
-        if (length(unique(temp$SITE_ID)) > 1) {
-          y_lm <- lm(temp[[cog]] ~ SITE_ID, data = temp)
-          x_lm <- lm(temp$z_score ~ SITE_ID, data = temp)
+        if (length(unique(temp$Site)) > 1) {
+          y_lm <- lm(temp[[cog]] ~ Site, data = temp)
+          x_lm <- lm(temp$z_score ~ Site, data = temp)
         } else {
           y_lm <- lm(temp[[cog]] ~ 1, data = temp)
           x_lm <- lm(temp$z_score ~ 1, data = temp)
@@ -131,6 +123,7 @@ for (st in steps) {
           coef = cor_test$estimate,
           p_value = cor_test$p.value,
           n = nrow(temp),
+          df = df.residual(y_lm),
           method = "spearman"
         )
       }
@@ -138,13 +131,13 @@ for (st in steps) {
       ## ---------- Pearson ----------
       for (cog in names_cog_p) {
         
-        temp <- dat[, c("z_score", cog, "SITE_ID")]
+        temp <- dat[, c("z_score", cog, "Site")]
         temp <- temp[complete.cases(temp), ]
         if (nrow(temp) < 40) next
         
-        if (length(unique(temp$SITE_ID)) > 1) {
-          y_lm <- lm(temp[[cog]] ~ SITE_ID, data = temp)
-          x_lm <- lm(temp$z_score ~ SITE_ID, data = temp)
+        if (length(unique(temp$Site)) > 1) {
+          y_lm <- lm(temp[[cog]] ~ Site, data = temp)
+          x_lm <- lm(temp$z_score ~ Site, data = temp)
         } else {
           y_lm <- lm(temp[[cog]] ~ 1, data = temp)
           x_lm <- lm(temp$z_score ~ 1, data = temp)
@@ -162,6 +155,7 @@ for (st in steps) {
           coef = cor_test$estimate,
           p_value = cor_test$p.value,
           n = nrow(temp),
+          df = df.residual(y_lm),
           method = "pearson"
         )
       }

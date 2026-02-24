@@ -26,18 +26,18 @@ showtext_auto()
 # ----------------------------
 # Paths
 # ----------------------------
-embedding_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_nbtw_embedding"
-demo_path     <- "/Volumes/Zuolab_XRF/supplement/abide_demo.xlsx"
+embedding_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/zsfei"
+demo_path     <- "/Volumes/Zuolab_XRF/supplement/abide/abide_demo.xlsx"
 site_dir      <- "/Volumes/Zuolab_XRF/data/abide/sublist"
 cluster_path  <- "/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv"
 
-out_dir  <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/difference"
+out_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/difference"
 plot_dir <- "/Volumes/Zuolab_XRF/output/abide/sfc/plot/difference"
 
 dir.create(out_dir,  recursive = TRUE, showWarnings = FALSE)
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
-step_max <- 7
+step_max <- 6
 nNet     <- 15
 
 # ----------------------------
@@ -45,14 +45,28 @@ nNet     <- 15
 # ----------------------------
 network_map <- tibble(
   Network = c(
-    "Net13","Net01","Net04","Net08","Net05",
-    "Net02","Net07","Net12","Net06","Net14",
-    "Net10","Net11","Net03","Net15","Net09"
+    "Net05", 
+    "Net13", "Net01", 
+    "Net04", "Net08",
+    "Net14", 
+    "Net06",
+    "Net02", 
+    "Net07", "Net12",
+    "Net10", "Net11",
+    "Net03", "Net15", 
+    "Net09"
   ),
   NetworkLabel = c(
-    "VIS-C","VIS-P","SMOT-B","SMOT-A","AUD",
-    "AN","dATN-B","dATN-A","PM-PPr","SAL/PMN",
-    "FPN-B","FPN-A","DN-B","DN-A","LANG"
+    "AUD",
+    "VIS-C", "VIS-P",
+    "SMOT-B", "SMOT-A",
+    "SAL/PMN",
+    "PM-PPr",
+    "AN",
+    "dATN-B", "dATN-A",
+    "FPN-B", "FPN-A",
+    "DN-B", "DN-A",
+    "LANG"
   ),
   Order = 1:15
 )
@@ -116,7 +130,7 @@ read_one_step <- function(step) {
     pivot_longer(
       cols = starts_with("Net"),
       names_to  = "Network",
-      values_to = "Embedding"
+      values_to = "zSFEI"
     ) %>%
     mutate(
       Step    = step,
@@ -141,7 +155,7 @@ data_all <- embedding_long %>%
   ) %>%
   mutate(
     Group = relevel(Group, ref = "TD"),
-    Embedding = as.numeric(Embedding)
+    zSFEI = as.numeric(zSFEI)
   )
 
 # ----------------------------
@@ -161,7 +175,7 @@ data_all <- data_all %>%
 
 fit_asd_vs_td <- function(df) {
   
-  m <- lm(Embedding ~ Group_ASD + AGE_AT_SCAN + site, data = df)
+  m <- lm(zSFEI ~ Group_ASD + AGE_AT_SCAN + site, data = df)
   em <- emmeans(m, ~ Group_ASD)
   
   as.data.frame(
@@ -172,7 +186,7 @@ fit_asd_vs_td <- function(df) {
 
 fit_subtype_vs_td <- function(df) {
   
-  m <- lm(Embedding ~ Group + AGE_AT_SCAN + site, data = df)
+  m <- lm(zSFEI ~ Group + AGE_AT_SCAN + site, data = df)
   em <- emmeans(m, ~ Group)
   
   as.data.frame(
@@ -195,7 +209,7 @@ fit_L_vs_H <- function(df) {
   
   if (n_distinct(df_asd$Group) < 2) return(NULL)
   
-  m <- lm(Embedding ~ Group + AGE_AT_SCAN + site, data = df_asd)
+  m <- lm(zSFEI ~ Group + AGE_AT_SCAN + site, data = df_asd)
   em <- emmeans(m, ~ Group)
   
   as.data.frame(
@@ -232,7 +246,7 @@ stats <- bind_rows(
     )
   )
 
-write_csv(stats, file.path(out_dir, "sfc_nbwt_group_contrast.csv"))
+write_csv(stats, file.path(out_dir, "zSFEI_abide_network_step.csv"))
 
 # ============================================================
 # Plot data
@@ -262,9 +276,11 @@ p <- ggplot(
   ) +
   facet_wrap(~ Contrast, nrow = 1) +
   scale_fill_gradient2(
-    low  = "#3B4CC0",
-    mid  = "white",
-    high = "#B40426",
+    low      = "#3d5c6f",
+    mid      = "white",
+    high     = "#e47159",
+    midpoint = 0,
+    limits   = c(-0.4, 0.4),
     name = expression(Delta~SFEI)
   ) +
   labs(x = "SFC步数", y = "功能网络") +
@@ -280,7 +296,7 @@ p <- ggplot(
   )
 
 ggsave(
-  filename = file.path(plot_dir, "sfc_nbwt_subtypes_contrasts.png"),
+  filename = file.path(plot_dir, "zSFEI_abide_network_step_difference.png"),
   plot     = p,
   width    = 4000,
   height   = 2200,

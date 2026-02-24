@@ -1,11 +1,7 @@
 clear; clc;
 
 abide_root = '/Volumes/Zuolab_XRF/data/abide';
-stat_root  = fullfile(abide_root, 'stats');
-
-if ~exist(stat_root, 'dir')
-    mkdir(stat_root);
-end
+stat_root  = '/Volumes/Zuolab_XRF/output/abide/dcm/sum';
 
 %% %%%%%%%%%%%% sum rDCM %%%%%%%%%%%%%%%%%%%
 rdcm_root  = fullfile(abide_root, 'rDCM');
@@ -23,14 +19,14 @@ fprintf('Found %d ABIDE rDCM files\n', nSub);
 
 EC_all   = zeros(nSub, nEC);
 subject  = cell(nSub, 1);
-site     = cell(nSub, 1);
+% site     = cell(nSub, 1);
 
 for i = 1:nSub
 
     load(fullfile(rdcm_root, mat_files(i).name));  
 
     subject{i} = subName;
-    site{i}    = siteName;
+%     site{i}    = siteName;
 
     EC_all(i, :) = reshape(EC', 1, []);
 
@@ -47,7 +43,7 @@ for from = 1:nROI
 end
 
 T = array2table(EC_all, 'VariableNames', colNames);
-T = addvars(T, subject, site, 'Before', 1);
+T = addvars(T, subject, 'Before', 1);
 
 writetable(T, out_xlsx);
 fprintf('rDCM Done!');
@@ -68,14 +64,14 @@ fprintf('Found %d ABIDE srDCM files\n', nSub);
 
 EC_all   = zeros(nSub, nEC);
 subject  = cell(nSub, 1);
-site     = cell(nSub, 1);
+% site     = cell(nSub, 1);
 
 for i = 1:nSub
 
     load(fullfile(rdcm_root, mat_files(i).name));  
 
     subject{i} = subName;
-    site{i}    = siteName;
+%     site{i}    = siteName;
 
     EC_all(i, :) = reshape(EC', 1, []);
 
@@ -92,7 +88,7 @@ for from = 1:nROI
 end
 
 T = array2table(EC_all, 'VariableNames', colNames);
-T = addvars(T, subject, site, 'Before', 1);
+T = addvars(T, subject, 'Before', 1);
 
 writetable(T, out_xlsx);
 fprintf('srDCM Done!');

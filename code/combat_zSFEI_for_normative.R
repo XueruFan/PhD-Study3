@@ -19,7 +19,7 @@ library(neuroCombat)
 # 1. Load dataset (包含 TD + ASD)
 ############################################################
 
-data_path <- "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data.xlsx"
+data_path <- "/Volumes/Zuolab_XRF/output/normative/zSFEI_normative_data.xlsx"
 
 normative_data <- read.xlsx(data_path)
 
@@ -50,10 +50,10 @@ normative_data <- normative_data %>%
 ############################################################
 
 wide_data <- normative_data %>%
-  select(Cohort, ID, Session, Site, Age, Subtype, Diagnosis, Feature, SFEI) %>%
+  select(Cohort, ID, Session, Site, Age, Subtype, Diagnosis, Feature, zSFEI) %>%
   pivot_wider(
     names_from  = Feature,
-    values_from = SFEI
+    values_from = zSFEI
   )
 
 ############################################################
@@ -122,7 +122,7 @@ harmonized_long <- harmonized_wide %>%
   pivot_longer(
     cols = all_of(feature_cols),
     names_to = "Feature",
-    values_to = "SFEI_ComBat"
+    values_to = "zSFEI_ComBat"
   ) %>%
   separate(
     Feature,
@@ -138,7 +138,7 @@ harmonized_long <- harmonized_wide %>%
 # 11. 保存结果
 ############################################################
 
-output_path <- "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data_combat.xlsx"
+output_path <- "/Volumes/Zuolab_XRF/output/normative/zSFEI_normative_data_combat.xlsx"
 
 write.xlsx(harmonized_long, output_path, overwrite = TRUE)
 

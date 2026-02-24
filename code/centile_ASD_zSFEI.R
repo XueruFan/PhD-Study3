@@ -13,9 +13,9 @@ library(gamlss)
 # Paths
 ############################################################
 
-data_path  <- "/Volumes/Zuolab_XRF/output/normative/SFEI_normative_data_combat.xlsx"
-model_dir  <- "/Volumes/Zuolab_XRF/output/normative/gamlss_step1to5/models"
-output_dir <- "/Volumes/Zuolab_XRF/output/normative/gamlss_step1to5"
+data_path  <- "/Volumes/Zuolab_XRF/output/normative/zSFEI_normative_data_combat.xlsx"
+model_dir  <- "/Volumes/Zuolab_XRF/output/normative/gamlss/models"
+output_dir <- "/Volumes/Zuolab_XRF/output/normative/centile"
 
 ############################################################
 # Load full dataset
@@ -28,12 +28,12 @@ data_all <- data_all %>%
     Age = as.numeric(Age),
     Step = as.numeric(as.character(Step)),
     Network = as.factor(Network),
-    SFEI_ComBat = as.numeric(SFEI_ComBat)
+    zSFEI_ComBat = as.numeric(zSFEI_ComBat)
   ) %>%
   filter(Step <= 5) %>%
   mutate(
     Step = as.factor(Step),
-    SFEI_scaled = SFEI_ComBat * 1000
+    zSFEI_scaled = zSFEI_ComBat * 100
   )
 
 ############################################################
@@ -101,14 +101,14 @@ for (s in steps) {
     # z-score
     ########################################################
     
-    z_score <- (sub_asd$SFEI_scaled - mu_pred) / sigma_pred
+    z_score <- (sub_asd$zSFEI_scaled - mu_pred) / sigma_pred
     
     ########################################################
     # centile
     ########################################################
     
     centile <- pNO(
-      q = sub_asd$SFEI_scaled,
+      q = sub_asd$zSFEI_scaled,
       mu = mu_pred,
       sigma = sigma_pred
     )

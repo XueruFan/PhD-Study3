@@ -15,13 +15,13 @@ sapply(packages, require, character.only = TRUE)
 ## 路径
 ## ==============================
 
-sfcDir  <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_nbtw_embedding"
-subjFile <- "/Volumes/Zuolab_XRF/output/abide/sfc/sfc_participant_for_analysis.csv"
-phenoFile <- "/Volumes/Zuolab_XRF/supplement/abide_A_all_240315.csv"
+sfcDir  <- "/Volumes/Zuolab_XRF/output/abide/sfc/zsfei"
+subjFile <- "/Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_id.csv"
+phenoFile <- "/Volumes/Zuolab_XRF/supplement/abide/abide_A_all_240315.csv"
 clusterFile  <- "/Volumes/Zuolab_XRF/output/abide/ABIDE_cluster_all_subjects.csv"
 
 outDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/stat/corr"
-plotDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/plot/corr"
+# plotDir <- "/Volumes/Zuolab_XRF/output/abide/sfc/plot/corr"
 
 ## ==============================
 ## 读取被试列表
@@ -55,7 +55,7 @@ colnames(pheno)[colnames(pheno) == "Participant"] <- "participant"
 pheno$participant <- as.character(pheno$participant)
 
 
-## SITE_ID 统一（与你旧代码一致）
+## SITE_ID 统一
 pheno$SITE_ID <- gsub("ABIDEII-NYU_1|ABIDEII-NYU_2", "NYU", pheno$SITE_ID)
 pheno$SITE_ID <- gsub("ABIDEII-KKI_1", "KKI", pheno$SITE_ID)
 pheno$SITE_ID <- gsub("ABIDEII-SDSU_1", "SDSU", pheno$SITE_ID)
@@ -191,7 +191,7 @@ final_results <- bind_rows(all_results) %>% arrange(p_value)
 
 write.csv(
   final_results,
-  file.path(outDir, "SFEI_nbwt_cognition_LH.csv"),
+  file.path(outDir, "zSFEI_cognition.csv"),
   row.names = FALSE
 )
 
@@ -258,7 +258,7 @@ final_results_sig <- final_results_sig %>%
 ## -------- 7. 保存最终显著结果表
 write.csv(
   final_results_sig,
-  file.path(outDir, "SFEI_nbwt_cognition_LH_significant.csv"),
+  file.path(outDir, "zSFEI_cognition_significant.csv"),
   row.names = FALSE
 )
 
