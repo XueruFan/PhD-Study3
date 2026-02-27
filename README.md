@@ -97,7 +97,7 @@ CCNPPEK0001_01_rest01_DU15_network_ts.mat
 `sum_zSFEI_ABIDE.m`和`sum_zSFEI_CCNP.m`汇总所有被试的SFEI
 
 ### 筛选CCNP被试数据
-`select_ccnppek_participant.R`（和`select_ccnpckg_participant_fsaverage5.R`）筛选出meanfd小于0.3的被试数据，并对同一个session内的所有通过qc的run取平均
+`select_ccnppek_participant_zSFEI.R`（和`select_ccnpckg_participant_fsaverage5.R`）筛选出meanfd小于0.3的被试数据，并对同一个session内的所有通过qc的run取平均
 /Volumes/Zuolab_XRF/output/ccnp/sfc/zsfei/pek_step01_fd0.3_sessionAvg.xlsx
 
 ### ？？？分subtype × step计算ABIDE的SFEI均值
@@ -167,22 +167,69 @@ zSFC_mean_ASD_H_step08.csv
 
 # PhD Study4: DCM分析
 
-### 计算与汇总rDCM
+## 计算与汇总rDCM
+
+### 计算
 `calculate_rDCM_ABIDE.m`和`calculate_rDCM_CCNP.m`（calculate_rDCM_CCNP_fsaverage5.m），srDCM和rDCM
-`sum_rDCM_ABIDE.m`和`sum_rDCM_CCNP.m`
-/Volumes/Zuolab_XRF/output/abide/dcm/sum/ABIDE_rDCM_summary.xlsx
+
+### 汇总
 `sum_srDCM_ABIDE.m`
+/Volumes/Zuolab_XRF/output/abide/dcm/sum/ABIDE_rDCM_summary.xlsx
 /Volumes/Zuolab_XRF/output/abide/dcm/sum/ABIDE_srDCM_summary.xlsx
 
-### 对abide的srDCM结果进行鲁棒pca分析，同时验证了Net14
+`sum_srDCM_CCNP.m`
+/Volumes/Zuolab_XRF/output/ccnp/dcm/sum/CCNP_rDCM_summary.xlsx
+/Volumes/Zuolab_XRF/output/ccnp/dcm/sum/CCNP_srDCM_summary.xlsx
+
+### 筛选CCNP被试数据
+`select_ccnppek_participant_srDCM.R`筛选出meanfd小于0.3的被试数据，并对同一个session内的所有通过qc的run取平均
+/Volumes/Zuolab_XRF/output/ccnp/dcm/sum/pek_srdcm_fd0.3_sessionAvg.xlsx
+
+## 因果调控机制变异轴分析
+
+### 对abide的rDCM结果进行鲁棒pca分析
+只分析ASD`analysis_rDCM_pca_ABIDE.R`
+合并TD与ASD分析`analysis_rDCM_pca_asd_ABIDE.R`
+
+### 分析主成分构成的关键边
+合并分析`analysis_rDCM_pca_keyNet_ABIDE.R`
+
+### 分析EC和认知行为的相关
+合并分析`statistic_rDCM_ECcorrelations_ABIDE.R`
+只分析asd`statistic_rDCM_asd_ECcorrelations_ABIDE.R`
+
+### 筛选出来关键边的相关
+`pickup_KeyNetwork_corr.R`
+
+### 分析PC和认知行为的相关
+合并分析`statistic_rDCM_PCcorrelations_ABIDE.R`
+只分析asd`statistic_rDCM_asd_PCcorrelations_ABIDE.R`
+
+
+
+
+### 对abide的srDCM结果进行鲁棒pca分析
 `analysis_srDCM_pca_ABIDE.R`
-/Volumes/Zuolab_XRF/output/abide/dcm/des/ABIDE_male_RobustPCA_full_results.xlsx
+/Volumes/Zuolab_XRF/output/abide/dcm/des/ABIDE_RobustPCA_Correlations.xlsx
+/Volumes/Zuolab_XRF/output/abide/dcm/des/ABIDE_RobustPCA_Difference.xlsx
+
 /Volumes/Zuolab_XRF/output/abide/dcm/plot/RobustPCA_PC1_axis.png
 /Volumes/Zuolab_XRF/output/abide/dcm/plot/RobustPCA_PC1_loadings_heatmap_named.png
 /Volumes/Zuolab_XRF/output/abide/dcm/plot/RobustPCA_space.png
 
 /Volumes/Zuolab_XRF/output/abide/dcm/des/Node14_validation_results.xlsx
 /Volumes/Zuolab_XRF/output/abide/dcm/plot/PC1_vs_Node14_in_strength.png
+
+### 对CCNP（18岁以下男性）的srDCM结果进行鲁棒pca分析
+`analysis_srDCM_pca_CCNP.R`
+/Volumes/Zuolab_XRF/output/ccnp/dcm/des/CCNP_RobustPCA_mechanism_full_summary.xlsx
+/Volumes/Zuolab_XRF/output/ccnp/dcm/plot
+
+### ccnp发育常模
+`gamlss_srDCM_ccnp.R`
+`gamlss_srDCM_SALPMN_ccnp.R`
+
+
 
 
 
