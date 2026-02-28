@@ -14,6 +14,8 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 
+set.seed(1205)
+
 ############################################################
 font_add(
   family = "pingfang",
@@ -23,15 +25,12 @@ showtext_auto()
 theme_set(theme_bw(base_family = "pingfang"))
 
 ############################################################
-out_root <- "/Volumes/Zuolab_XRF/output/abide/dcm/des/srDCM"
-plot_dir <- "/Volumes/Zuolab_XRF/output/abide/dcm/plot/srDCM"
-
-dir.create(out_root, recursive = TRUE, showWarnings = FALSE)
-dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
+out_root <- "/Volumes/Zuolab_XRF/output/abide/dcm/des/rDCM/All"
+plot_dir <- "/Volumes/Zuolab_XRF/output/abide/dcm/plot/rDCM/All"
 
 ############################################################
 
-dcm_path  <- "/Volumes/Zuolab_XRF/output/abide/dcm/sum/ABIDE_srDCM_summary.xlsx"
+dcm_path  <- "/Volumes/Zuolab_XRF/output/abide/dcm/sum/ABIDE_rDCM_summary.xlsx"
 demo_path <- "/Volumes/Zuolab_XRF/output/abide/sfc/des/zSFEI_abide_demo.csv"
 
 dcm_df <- read_excel(dcm_path) %>%
@@ -50,7 +49,7 @@ df <- left_join(demo_df, dcm_df, by = "subject") %>%
       Subtype %in% c("ASD-L", "ASD-H") ~ "ASD",
       TRUE ~ NA_character_
     ),
-    Diagnosis = factor(Diagnosis)
+    Diagnosis = factor(Diagnosis),
   )
 
 ############################################################
@@ -59,19 +58,11 @@ ec_cols <- grep("^EC_", colnames(df), value = TRUE)
 ec_matrix <- as.matrix(df[, ec_cols])
 
 ############################################################
-# 删除对角线边（From == To）
-# ec_cols_no_diag <- ec_cols[
-#   !str_detect(ec_cols, "EC_(\\d+)_to_\\1$")
-# ]
-# 
-# ec_matrix <- as.matrix(df[, ec_cols_no_diag])
-
-############################################################
 # ComBat
 
 combat_input <- t(ec_matrix)
 batch <- as.factor(df$site)
-mod <- model.matrix(~ Age + Diagnosis, data = df)
+mod <- model.matrix(~ Age + Subtype, data = df)
 
 combat_res <- neuroCombat(
   dat = combat_input,
@@ -99,7 +90,7 @@ ec_matrix_scaled <- scale(ec_matrix_combat)
 # n_features <- ncol(ec_matrix_scaled)
 # k_max      <- min(n_samples - 1, n_features)
 
-k_max <- 5
+k_max <- 3
 
 rpca_res <- PcaHubert(
   ec_matrix_scaled,
@@ -124,19 +115,22 @@ colnames(loadings_rpca) <- paste0("PC",1:ncol(loadings_rpca))
 loadings_rpca$edge <- colnames(ec_matrix_scaled)
 
 ############################################################
-# 计算真实解释方差比例
-############################################################
 
-eigenvalues <- rpca_res@eigenvalues
+# ===== 计算 classical explained variance =====
 
-# 原始总方差
+load_mat <- as.matrix(loadings_rpca[,1:k_max])
+
+scores_classical <- as.matrix(ec_matrix_scaled) %*% load_mat
+
+pc_variances <- apply(scores_classical, 2, var)
+
 total_variance <- sum(apply(ec_matrix_scaled, 2, var))
 
-variance_ratio <- eigenvalues / total_variance
+variance_ratio <- pc_variances / total_variance
 
 variance_df <- data.frame(
-  PC = paste0("PC",1:length(eigenvalues)),
-  Eigenvalue = eigenvalues,
+  PC = paste0("PC",1:k_max),
+  PC_Variance = pc_variances,
   Variance_Explained = variance_ratio,
   Cumulative = cumsum(variance_ratio)
 )
@@ -160,7 +154,7 @@ writeData(wb,"Variance",variance_df)
 ############################################################
 
 pcs <- paste0("PC",1:k_max)
-
+  
 for (pc in pcs) {
   
   formula_str <- as.formula(
@@ -196,7 +190,7 @@ for (pc in pcs) {
 
 saveWorkbook(
   wb,
-  file.path(out_root,"ABIDE_srDCM_RobustPCA_AllComponents.xlsx"),
+  file.path(out_root,"RobustPCA_AllComponents.xlsx"),
   overwrite = TRUE
 )
 
@@ -239,10 +233,10 @@ for (pc in pcs) {
 pc_pairs <- combn(pcs,2)
 
 for (i in 1:ncol(pc_pairs)) {
-  
+
   xpc <- pc_pairs[1,i]
   ypc <- pc_pairs[2,i]
-  
+
   p_space <- ggplot(scores_rpca,
                     aes_string(x = xpc, y = ypc, color = "Subtype")) +
     geom_point(size = 4, alpha = 0.85) +
@@ -254,7 +248,7 @@ for (i in 1:ncol(pc_pairs)) {
       )
     ) +
     theme_classic(base_size = 28)
-  
+
   ggsave(
     file.path(plot_dir,
               paste0("RobustPCA_",xpc,"_",ypc,"_space.png")),
@@ -352,8 +346,8 @@ make_heatmap <- function(pc_name){
 make_heatmap("PC1")
 make_heatmap("PC2")
 make_heatmap("PC3")
-make_heatmap("PC4")
-make_heatmap("PC5")
+# make_heatmap("PC4")
+# make_heatmap("PC5")
 
 
 ############################################################
@@ -410,68 +404,96 @@ compute_node_contribution <- function(pc_name){
 node_pc1 <- compute_node_contribution("PC1")
 node_pc2 <- compute_node_contribution("PC2")
 node_pc3 <- compute_node_contribution("PC3")
-node_pc4 <- compute_node_contribution("PC4")
-node_pc5 <- compute_node_contribution("PC5")
+# node_pc4 <- compute_node_contribution("PC4")
+# node_pc5 <- compute_node_contribution("PC5")
 
 key_pc1 <- node_pc1 %>% filter(abs(To_z)>2 | abs(From_z)>2)
 key_pc2 <- node_pc2 %>% filter(abs(To_z)>2 | abs(From_z)>2)
 key_pc3 <- node_pc3 %>% filter(abs(To_z)>2 | abs(From_z)>2)
-key_pc4 <- node_pc4 %>% filter(abs(To_z)>2 | abs(From_z)>2)
-key_pc5 <- node_pc5 %>% filter(abs(To_z)>2 | abs(From_z)>2)
+# key_pc4 <- node_pc4 %>% filter(abs(To_z)>2 | abs(From_z)>2)
+# key_pc5 <- node_pc5 %>% filter(abs(To_z)>2 | abs(From_z)>2)
 
 
 ############################################################
 # 自动验证函数
 ############################################################
 
-validate_axis <- function(pc_name,key_df){
+validate_axis <- function(pc_name, key_df){
   
-  edge_info <- tibble(edge=colnames(ec_matrix_scaled)) %>%
+  edge_info <- tibble(edge = colnames(ec_matrix_scaled)) %>%
     mutate(
-      From=as.integer(str_extract(edge,"(?<=EC_)\\d+")),
-      To=as.integer(str_extract(edge,"(?<=to_)\\d+"))
+      From = as.integer(str_extract(edge,"(?<=EC_)\\d+")),
+      To   = as.integer(str_extract(edge,"(?<=to_)\\d+"))
     )
   
   results <- list()
+  idx <- 1
   
   for(i in 1:nrow(key_df)){
     
     node_id   <- key_df$Label[i]
     node_name <- key_df$Node[i]
     
-    direction <- ifelse(abs(key_df$To_z[i]) >
-                          abs(key_df$From_z[i]),
-                        "incoming","outgoing")
-    
-    if(direction=="incoming"){
-      node_edges <- edge_info %>% filter(To==node_id) %>% pull(edge)
-    }else{
-      node_edges <- edge_info %>% filter(From==node_id) %>% pull(edge)
+    # -------- incoming 方向 --------
+    if(abs(key_df$To_z[i]) > 2){
+      
+      node_edges <- edge_info %>% 
+        filter(To == node_id) %>% 
+        pull(edge)
+      
+      node_strength <- ec_matrix_scaled[, node_edges, drop = FALSE] %>%
+        as.data.frame() %>%
+        mutate(Node_mean = rowMeans(.))
+      
+      data_tmp <- scores_rpca %>% bind_cols(node_strength)
+      
+      cor_res <- cor.test(
+        data_tmp[[pc_name]],
+        data_tmp$Node_mean
+      )
+      
+      results[[idx]] <- data.frame(
+        PC = pc_name,
+        Network = node_name,
+        Direction = "incoming",
+        r = cor_res$estimate,
+        p_value = cor_res$p.value
+      )
+      
+      idx <- idx + 1
     }
     
-    node_strength <- ec_matrix_scaled[,node_edges] %>%
-      as.data.frame() %>%
-      mutate(Node_mean=rowMeans(.))
-    
-    data_tmp <- scores_rpca %>% bind_cols(node_strength)
-    
-    cor_res <- cor.test(
-      data_tmp[[pc_name]],
-      data_tmp$Node_mean
-    )
-    
-    cor_df <- data.frame(
-      PC=pc_name,
-      Network=node_name,
-      Direction=direction,
-      r=cor_res$estimate,
-      p_value=cor_res$p.value
-    )
-    
-    results[[i]] <- cor_df
+    # -------- outgoing 方向 --------
+    if(abs(key_df$From_z[i]) > 2){
+      
+      node_edges <- edge_info %>% 
+        filter(From == node_id) %>% 
+        pull(edge)
+      
+      node_strength <- ec_matrix_scaled[, node_edges, drop = FALSE] %>%
+        as.data.frame() %>%
+        mutate(Node_mean = rowMeans(.))
+      
+      data_tmp <- scores_rpca %>% bind_cols(node_strength)
+      
+      cor_res <- cor.test(
+        data_tmp[[pc_name]],
+        data_tmp$Node_mean
+      )
+      
+      results[[idx]] <- data.frame(
+        PC = pc_name,
+        Network = node_name,
+        Direction = "outgoing",
+        r = cor_res$estimate,
+        p_value = cor_res$p.value
+      )
+      
+      idx <- idx + 1
+    }
   }
   
-  return(do.call(rbind,results))
+  return(do.call(rbind, results))
 }
 
 cor_pc1 <- validate_axis("PC1",key_pc1)
@@ -486,7 +508,7 @@ cor_pc3 <- validate_axis("PC3",key_pc3)
 
 wb <- createWorkbook()
 
-for (i in 1:3) {
+for (i in c(1,2,3)) {
   
   node_obj <- get(paste0("node_pc", i))
   key_obj  <- get(paste0("key_pc", i))
@@ -505,6 +527,6 @@ for (i in 1:3) {
 saveWorkbook(
   wb,
   file.path(out_root,
-            "ABIDE_srDCM_RobustPCA_Correlations.xlsx"),
+            "RobustPCA_Correlations.xlsx"),
   overwrite=TRUE
 )

@@ -44,7 +44,7 @@ nNet     <- 15
 # 2. Read demographic information
 # ----------------------------
 demo <- read_xlsx(demo_path) %>%
-  select(
+  dplyr::select(
     Participant,
     AGE_AT_SCAN,
     SEX
@@ -200,7 +200,7 @@ overall_summary <- data_clean %>%
     .groups  = "drop"
   ) %>%
   mutate(site = "ALL") %>%
-  select(site, everything())
+  dplyr::select(site, everything())
 
 site_summary <- data_clean %>%
   group_by(Subtype, site) %>%
@@ -292,7 +292,7 @@ network_map <- tibble(
 
 data_to_plot <- data_all %>%
   left_join(
-    network_map %>% select(Network, NetworkLabel),
+    network_map %>% dplyr::select(Network, NetworkLabel),
     by = "Network"
   )
 
