@@ -127,7 +127,7 @@ zSFC_mean_ASD_H_step08.csv
 /Volumes/Zuolab_XRF/output/abide/sfc/stat/difference/zSFEI_abide_network_step.csv
 
 ### SFEI与认知行为的相关分析
-`statistic_zSFC_correlations_abide.R`
+`statistic_zSFEI_correlations_abide.R`
 /Volumes/Zuolab_XRF/output/abide/sfc/stat/corr
 
 ## SFEI的个体偏离分析
@@ -142,10 +142,10 @@ zSFC_mean_ASD_H_step08.csv
 /Volumes/Zuolab_XRF/output/normative/zSFEI_normative_data_combat.xlsx
 
 ### 建立SFEI的常模
-`statistic_FD_correlations_ccnp.R`分析fd和SFEI是否相关，结果是不相关
+`statistic_FD_zSFEI_correlations_ccnp.R`分析fd和SFEI是否相关，结果是不相关
 /Volumes/Zuolab_XRF/output/normative/zSFEI_fd_correlation.xlsx
 
-`gamlss_zSFEI_ccnp.R` 用CCNP和ABIDE中的TD一起建模GAMLSS
+`gamlss_zSFEI.R` 用CCNP和ABIDE中的TD一起建模GAMLSS
 /Volumes/Zuolab_XRF/output/normative/gamlss
 
 ### 计算偏离
@@ -184,26 +184,41 @@ zSFC_mean_ASD_H_step08.csv
 ### 筛选CCNP被试数据
 `select_ccnppek_participant_srDCM.R`筛选出meanfd小于0.3的被试数据，并对同一个session内的所有通过qc的run取平均
 /Volumes/Zuolab_XRF/output/ccnp/dcm/sum/pek_srdcm_fd0.3_sessionAvg.xlsx
+/Volumes/Zuolab_XRF/output/ccnp/dcm/sum/pek_rdcm_fd0.3_sessionAvg.xlsx
+
+## rDCM发育阶段常模
+
+### 汇总数据
+`sum_rDCM_for_combat.R` 汇总CCNP中meanfd小于0.3，ccnp和abide中的td 筛选年龄不超过18的男性，数据整合起来用于建模
+/Volumes/Zuolab_XRF/output/norm_rDCM/rDCM_normative_data.xlsx
+
+### combat去除站点效应
+`combat_rDCM_for_normative.R` ABIDE（ASD、TD）和CCNP一起combat
+/Volumes/Zuolab_XRF/output/norm_rDCM/rDCM_normative_data_combat.xlsx
+
+### 建立rDCM的常模并计算偏离
+`statistic_FD_rDCM_correlations_ccnp.R`分析fd和SFEI是否相关
+/Volumes/Zuolab_XRF/output/norm_rDCM/rDCM_fd_correlation.xlsx
+
+`gamlss_rDCM.R`
+/Volumes/Zuolab_XRF/output/norm_rDCM/gamlss
 
 ## 因果调控机制变异轴分析
 
-### 对abide的rDCM结果进行鲁棒pca分析
-只分析ASD`analysis_rDCM_pca_ABIDE.R`
-合并TD与ASD分析`analysis_rDCM_pca_asd_ABIDE.R`
+### 对abide的rDCM结果进行plsda分析
+`analysis_rDCM_plsda_ABIDE.R`
 
 ### 分析主成分构成的关键边
-合并分析`analysis_rDCM_pca_keyNet_ABIDE.R`
+`analysis_rDCM_plsda_keyNet_ABIDE.R`
 
+
+#### 下面两个就不要了
 ### 分析EC和认知行为的相关
-合并分析`statistic_rDCM_ECcorrelations_ABIDE.R`
-只分析asd`statistic_rDCM_asd_ECcorrelations_ABIDE.R`
+`statistic_rDCM_ECcorrelations_ABIDE.R`
 
 ### 筛选出来关键边的相关
 `pickup_KeyNetwork_corr.R`
 
-### 分析PC和认知行为的相关
-合并分析`statistic_rDCM_PCcorrelations_ABIDE.R`
-只分析asd`statistic_rDCM_asd_PCcorrelations_ABIDE.R`
 
 
 
